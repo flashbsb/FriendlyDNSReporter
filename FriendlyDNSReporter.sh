@@ -1,15 +1,16 @@
 #!/bin/bash
 
 # ==============================================
-# SCRIPT DIAGNÓSTICO DNS - EXECUTIVE EDITION
-# Versão: 12.24.86
+# SCRIPT FriendlyDNSReporter - EXECUTIVE EDITION
+# Versão: 1.0.0
 # "Executive Scorecard - Terminal Edition"
 
 # --- CONFIGURAÇÕES GERAIS ---
-SCRIPT_VERSION="12.24.86"
+SCRIPT_VERSION="1.0.0"
+PRODUCT_SLOGAN="FriendlyDNSReporter. Because it is always DNS. Or not. FriendlyDNSReporter runs automated DNS tests, replaces endless manual dig commands, and produces colorful HTML reports so you can prove it was DNS. Or discover new, exciting doubts"
 
 # Carrega configurações externas
-CONFIG_FILE_NAME="diagnostico.conf"
+CONFIG_FILE_NAME="FriendlyDNSReporter.conf"
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
 # Resolução de Path do Config
@@ -277,6 +278,8 @@ init_html_parts() {
 
 print_help_text() {
     echo -e "${PURPLE}DESCRIÇÃO GERAL:${NC}"
+    echo -e "  $PRODUCT_SLOGAN"
+    echo -e ""
     echo -e "  Esta ferramenta é um auditor de infraestrutura DNS projetado para validar a"
     echo -e "  confiabilidade, consistência e performance de servidores autoritativos e recursivos."
     echo -e ""
@@ -419,7 +422,7 @@ print_help_text() {
 show_help() {
     clear
     echo -e "${CYAN}==============================================================================${NC}"
-    echo -e "${CYAN}   📚 DIAGNÓSTICO DNS AVANÇADO - MANUAL DE REFERÊNCIA (v${SCRIPT_VERSION})    ${NC}"
+    echo -e "${CYAN}   📚 FriendlyDNSReporter - MANUAL DE REFERÊNCIA (v${SCRIPT_VERSION})    ${NC}"
     echo -e "${CYAN}==============================================================================${NC}"
     echo -e ""
     print_help_text
@@ -465,9 +468,10 @@ EOF
 print_execution_summary() {
     clear
     echo -e "${CYAN}######################################################${NC}"
-    echo -e "${CYAN}#${NC} ${BOLD}  🔍 DIAGNÓSTICO DNS - EXECUTIVE EDITION           ${NC}${CYAN}#${NC}"
+    echo -e "${CYAN}#${NC} ${BOLD}  🔍 FriendlyDNSReporter - EXECUTIVE EDITION           ${NC}${CYAN}#${NC}"
     echo -e "${CYAN}#${NC}       ${GRAY}v${SCRIPT_VERSION} - Executive Scorecard (Ter)        ${NC}      ${CYAN}#${NC}"
     echo -e "${CYAN}######################################################${NC}"
+    echo -e "${GRAY}$PRODUCT_SLOGAN${NC}"
     
     # Display Startup Warnings if any
     if [[ ${#STARTUP_WARNINGS[@]} -gt 0 ]]; then
@@ -638,7 +642,8 @@ init_log_file() {
     
     log_rotation "$LOG_FILE_TEXT"
     
-    local header_content="DNS DIAGNOSTIC TOOL v$SCRIPT_VERSION - FORENSIC LOG
+    local header_content="FriendlyDNSReporter v$SCRIPT_VERSION - FORENSIC LOG
+$PRODUCT_SLOGAN
 Date: $START_TIME_HUMAN
   Config Dump:
   Files: Domains='$FILE_DOMAINS', Groups='$FILE_GROUPS'
@@ -1299,7 +1304,7 @@ cat > "$TEMP_HEADER" << EOF
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório DNS v$SCRIPT_VERSION - $TIMESTAMP</title>
+    <title>FriendlyDNSReporter v$SCRIPT_VERSION - $TIMESTAMP</title>
     <style>
         :root {
             --bg-body: #0f172a;
@@ -1628,9 +1633,12 @@ cat > "$TEMP_HEADER" << EOF
     <div class="container">
         <header>
             <h1>
-                🔍 Diagnóstico DNS
+                🔍 FriendlyDNSReporter
                 <small>v$SCRIPT_VERSION</small>
             </h1>
+            <p style="margin-top:5px; color:var(--text-secondary); font-size:0.95rem; font-style:italic;">
+                $PRODUCT_SLOGAN
+            </p>
             <div style="text-align: right; color: var(--text-secondary); font-size: 0.9rem;">
                 <div>Executado em: <strong>$TIMESTAMP</strong></div>
                 <div style="font-size: 0.8em; margin-top:4px;">Tempo Total: <span id="total_time_placeholder">...</span></div>
@@ -3197,7 +3205,7 @@ generate_html_report_v2() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório DNS v${SCRIPT_VERSION}</title>
+    <title>FriendlyDNSReporter v${SCRIPT_VERSION}</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3462,7 +3470,7 @@ generate_html_report_v2() {
 <body>
     <aside class="collapsed">
         <div class="toggle-btn" onclick="toggleSidebar()">‹</div>
-        <div class="logo"><span style="color:var(--accent)">DNS</span><span class="logo-text">Diag <span style="font-size:0.5em; opacity:0.5; margin-left:5px">v${SCRIPT_VERSION}</span></span></div>
+        <div class="logo"><span style="color:var(--accent)">Friendly</span><span class="logo-text">DNSReporter <span style="font-size:0.5em; opacity:0.5; margin-left:5px">v${SCRIPT_VERSION}</span></span></div>
         <nav>
             <div class="nav-item active" onclick="openTab('tab-dashboard')" title="Dashboard"><span>📊</span><span class="nav-text">Dashboard</span></div>
             <div class="nav-item" onclick="openTab('tab-servers')" title="Servidores & Infra"><span>🖥️</span><span class="nav-text">Servidores</span></div>
@@ -3633,8 +3641,8 @@ EOF
             </details>
             
             <div style="margin-top:30px; text-align:center; color:#64748b; font-size:0.8rem; border-top:1px solid #334155; padding-top:20px;">
-                Gerado automaticamente por <strong>DNS Diagnostic Tool</strong><br>
-                Repositório Oficial: <a href="https://github.com/flashbsb/diagnostico_dns" target="_blank" style="color:#3b82f6; text-decoration:none;">github.com/flashbsb/diagnostico_dns</a>
+                Gerado automaticamente por <strong>FriendlyDNSReporter</strong><br>
+                Repositório Oficial: <a href="https://github.com/flashbsb/FriendlyDNSReporter" target="_blank" style="color:#3b82f6; text-decoration:none;">github.com/flashbsb/FriendlyDNSReporter</a>
             </div>
         </div>
 
@@ -3788,7 +3796,7 @@ EOF
              <div class="card" style="margin-bottom:20px; border-left:4px solid #3b82f6;">
                 <h3>📌 Disclaimer</h3>
                 <p style="color:#94a3b8; margin-top:10px;">
-                    Este relatório foi gerado automaticamente pelo <strong>DNS Diagnostics Tool v${SCRIPT_VERSION}</strong>.
+                    Este relatório foi gerado automaticamente pelo <strong>FriendlyDNSReporter v${SCRIPT_VERSION}</strong>.
                     Todas as informações aqui apresentadas refletem o estado da infraestrutura no momento exato da execução.
                     Latências e conectividade podem variar. A flag <strong>VER: HIDDEN</strong> indica que o servidor oculta sua versão (boa prática).
                     <strong>AXFR: DENIED</strong> indica que a transferência de zona está bloqueada (seguro).
@@ -5188,7 +5196,7 @@ print_final_terminal_summary() {
 
      echo -e "\n${BOLD}======================================================${NC}"
      echo -e "${CYAN}      📥 BAIXE E CONTRIBUA NO GITHUB${NC}"
-     echo -e "${CYAN}      🔗 https://github.com/flashbsb/diagnostico_dns${NC}"
+     echo -e "${CYAN}      🔗 https://github.com/flashbsb/FriendlyDNSReporter${NC}"
      echo -e "${BOLD}======================================================${NC}"
 }
 
