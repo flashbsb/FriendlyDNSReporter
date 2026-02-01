@@ -2,11 +2,11 @@
 
 # ==============================================
 # SCRIPT FriendlyDNSReporter - INITIAL EDITION
-# Version: 1.0.8
+# Version: 1.0.15
 # "Initial Edition"
 
 # --- GENERAL SETTINGS ---
-SCRIPT_VERSION="1.0.8"
+SCRIPT_VERSION="1.0.15"
 PRODUCT_SLOGAN="FriendlyDNSReporter. Because it is always DNS. Or not. FriendlyDNSReporter runs automated DNS tests, replaces endless manual dig commands, and produces colorful HTML reports so you can prove it was DNS. Or discover new, exciting doubts"
 
 # Load external configuration
@@ -205,6 +205,13 @@ ENABLE_PHASE_RECORD=${ENABLE_PHASE_RECORD:-"true"}
 # Traceroute Defaults
 ENABLE_TRACE=${ENABLE_TRACE:-"false"}
 TRACE_MAX_HOPS=${TRACE_MAX_HOPS:-30}
+
+# Missing Configs Defaults
+ENABLE_IPV6=${ENABLE_IPV6:-"false"}
+DIG_TIMEOUT=${DIG_TIMEOUT:-1}
+DIG_TRIES=${DIG_TRIES:-1}
+ENABLE_FULL_REPORT=${ENABLE_FULL_REPORT:-"true"}
+ENABLE_SIMPLE_REPORT=${ENABLE_SIMPLE_REPORT:-"false"}
 
 init_html_parts() {
     # Generate unique session ID for temp files (PID + Random + Timestamp)
@@ -592,7 +599,7 @@ Date: $START_TIME_HUMAN
     # Write to temp buffer for HTML (so it appears in the tab)
     echo "$header_content" >> "$TEMP_FULL_LOG"
     
-    if [[ "$ENABLE_JSON_LOG" == "true" ]]; then
+    if [[ "$ENABLE_JSON_REPORT" == "true" ]]; then
         log_rotation "$LOG_FILE_JSON"
         # Init or append JSON log array start? 
         # For simplicity, line-delimited JSON (NDJSON) is better for streaming logs
@@ -600,7 +607,7 @@ Date: $START_TIME_HUMAN
 }
 
 log_json() {
-    [[ "$ENABLE_JSON_LOG" != "true" ]] && return
+    [[ "$ENABLE_JSON_REPORT" != "true" ]] && return
     local level="$1"
     local msg="$2"
     # Basic JSON construction using string interpolation
@@ -3243,7 +3250,7 @@ generate_html_report_v2() {
             </summary>
             <table style='width:100%; border-collapse:collapse;'>
             <thead style='background:#0f172a;'>
-               <tr><th style='width:35%'>${L_TH_SRV}</th><th style='width:25%'>${L_TH_LAT}</th><th>${L_Row_Config:-Config} & ${L_Row_Feat:-Features}</th></tr>
+               <tr><th style='width:30%'>${L_TH_SRV}</th><th style='width:20%'>${L_TH_LAT}</th><th style='width:10%; white-space:nowrap;'>Hops</th><th>${L_Row_Config:-Config} & ${L_Row_Feat:-Features}</th></tr>
             </thead>
             <tbody>"
             
@@ -3291,6 +3298,13 @@ generate_html_report_v2() {
             # Interactive Badges (Event Delegation)
             # Latency
             local lat_html="<span class='badge $lat_class log-trigger' style='cursor:pointer' data-lid='$lid_lat' data-title='Latency $ip' title='Click to view ping log'>${display_lat}</span>"
+            
+            # Hops
+            local hops="${STATS_SERVER_HOPS[$ip]:-N/A}"
+            local lid_trace="${LIDS_SERVER_TRACE[$ip]}"
+            local hops_class="bg-neutral"
+            if [[ "$hops" == "MAX" || "$hops" == "BLOCKED" ]]; then hops_class="bg-warn"; elif [[ "$hops" == "N/A" ]]; then hops_class="bg-neutral"; else hops_class="bg-ok"; fi
+            local hops_html="<span class='badge $hops_class log-trigger' style='cursor:pointer' data-lid='$lid_trace' data-title='Trace $ip'>${hops}</span>"
             local loss_html="<span class='badge $loss_class log-trigger' style='cursor:pointer' data-lid='$lid_lat' data-title='Loss $ip' title='Click to view ping log'>Loss: $loss</span>"
             
             # Update Capability Badges with data-attributes
@@ -3374,6 +3388,7 @@ generate_html_report_v2() {
             server_rows+="<tr>
                 <td><div style='font-weight:bold; color:#fff'>$ip</div></td>
                 <td><div style='display:flex; gap:5px; flex-wrap:wrap;'>$lat_html $loss_html</div></td>
+                <td>$hops_html</td>
                 <td><div style='margin-bottom:4px;'>$ver_st $rec_st</div><div style='display:flex; gap:5px; flex-wrap:wrap; opacity:0.8'>$caps</div></td>
             </tr>"
             
@@ -3974,7 +3989,12 @@ EOF
 
         <div id="tab-servers" class="tab-content"><div class="page-header"><div><h1>${L_TAB_SRV}</h1><div class="subtitle">Inventário e Performance.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$server_rows</div>
         <div id="tab-zones" class="tab-content"><div class="page-header"><div><h1>${L_TAB_ZONE}</h1><div class="subtitle">Autoridade e SOA.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$zone_rows</div>
-        <div id="tab-records" class="tab-content"><div class="page-header"><div><h1>${L_TAB_REC}</h1><div class="subtitle">Resolução e Consistência.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$record_rows</div>
+        <div id="tab-records" class="tab-content"><div class="page-header"><div><h1>${L_TAB_REC}</h1><div class="subtitle">Resolução e Consistência.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>
+EOF
+    # Inject Records Content
+    if [[ -f "$TEMP_SECTION_RECORD" ]]; then cat "$TEMP_SECTION_RECORD" >> "$target_file"; fi
+    cat >> "$target_file" << EOF
+        </div>
         
 <div id="tab-config" class="tab-content">
              <div class="page-header"><h1>${L_TAB_BACK}</h1><div class="subtitle">Detalhes técnicos, ambiente e configurações utilizadas.</div></div>
@@ -5667,8 +5687,9 @@ run_server_tests() {
                     <th>Server</th>
                     <th>Groups</th>
                     <th>Ping (ICMP)</th>
-                    <th>Hops</th>
-                    <th>Latency (ICMP)</th><th>Resp. Time (DNS)</th>
+                    <th>Latency (ICMP)</th>
+                    <th style="white-space:nowrap;">Hops</th>
+                    <th>Resp. Time (DNS)</th>
                     <th>Port 53</th>
                     <th>Port 853 (ABS)</th>
                     <th>Version (Bind)</th>
@@ -6107,8 +6128,8 @@ EOF
     <td>$ip</td>
     <td>$grps</td>
     <td>$ping_res_html</td>
-    <td>$hops_html</td>
     <td>$lat_stats</td>
+    <td style="white-space:nowrap;">$hops_html</td>
     <td style='color:${qt_hex_srv}; font-weight:bold;'>${qt_dns}ms</td>
     <td>$tcp53_res_html</td>
     <td>$dot_res_html</td>
@@ -6420,7 +6441,7 @@ EOF
     echo "</tbody></table></div></div>" >> "$TEMP_SECTION_ZONE"
 }
 
-generate_record_card() {
+generate_record_row() {
     local target="$1"
     local rec_type="$2"
     local grp="$3"
@@ -6428,24 +6449,18 @@ generate_record_card() {
     local consistency="$5"
     local unique_answers="$6"
     
-    # Determine card class and icon
-    local card_class="consistent"
-    local icon="✅"
-    local status_badge="<span class='badge status-ok'>CONSISTENT</span>"
-    local open_attr=""
+    # Determine status badge
+    local status_badge="<span class='badge status-ok'>OK</span>"
+    local divergence_info=""
     
     if [[ "$consistency" == "DIVERGENT" ]]; then
-        card_class="divergent"
-        icon="⚠️"
         status_badge="<span class='badge status-warn'>DIVERGENT</span>"
-        open_attr=" open"
+        divergence_info="<br><small style='color: var(--accent-warning);'>⚠️ $unique_answers distinct answers</small>"
     fi
     
     # Calculate statistics
     local total_servers=0
     local total_latency=0
-    local min_latency=99999
-    local max_latency=0
     local ok_count=0
     local fail_count=0
     
@@ -6463,117 +6478,48 @@ generate_record_card() {
         
         if [[ "$lat" =~ ^[0-9]+$ ]]; then
             total_latency=$((total_latency + lat))
-            [[ $lat -lt $min_latency ]] && min_latency=$lat
-            [[ $lat -gt $max_latency ]] && max_latency=$lat
         fi
     done
     
     local avg_latency=0
     [[ $total_servers -gt 0 ]] && avg_latency=$((total_latency / total_servers))
     
-    # Start card
+    # Build server results column with clickable badges
+    local server_results=""
+    for srv in $srv_list; do
+        local key="$target|$rec_type|$grp|$srv"
+        local lid="${LIDS_RECORD_RES[$key]}"
+        local lat="${STATS_RECORD_LATENCY[$key]:-0}"
+        local status="${STATS_RECORD_RES[$key]}"
+        
+        # Determine badge color based on status
+        local badge_class="badge neutral"
+        if [[ "$status" == "NOERROR" ]]; then
+            badge_class="badge status-ok"
+        elif [[ "$status" == "NXDOMAIN" ]]; then
+            badge_class="badge status-warn"
+        elif [[ "$status" =~ ^(SERVFAIL|REFUSED|TIMEOUT|ERR).*$ ]]; then
+            badge_class="badge status-fail"
+        fi
+        
+        if [[ -n "$lid" ]]; then
+            server_results+="<span class=\"$badge_class log-trigger\" data-lid=\"$lid\" data-title=\"Query: $target $rec_type @ $srv\" style=\"cursor:pointer; margin: 2px;\">$srv (${lat}ms)</span> "
+        else
+            server_results+="<span class=\"$badge_class\" style=\"margin: 2px;\">$srv (${lat}ms)</span> "
+        fi
+    done
+    
+    # Generate table row
     cat >> "$TEMP_SECTION_RECORD" <<EOF
-<details class="record-card $card_class"$open_attr>
-    <summary>
-        <span class="record-icon">$icon</span>
-        <span class="record-name">$target IN $rec_type @ $grp</span>
-        $status_badge
-        <span class="record-meta">$ok_count/$total_servers servers • avg ${avg_latency}ms</span>
-    </summary>
-    <div class="record-details">
+                <tr>
+                    <td>$target</td>
+                    <td><span class="badge neutral">$rec_type</span></td>
+                    <td>$grp</td>
+                    <td>$status_badge$divergence_info</td>
+                    <td style="max-width: 500px;">$server_results</td>
+                    <td style="text-align: center; font-weight: bold;">${avg_latency}ms</td>
+                </tr>
 EOF
-    
-    # If CONSISTENT, show simple view
-    if [[ "$consistency" == "CONSISTENT" ]]; then
-        local first_answer=""
-        for srv in $srv_list; do
-            local key="$target|$rec_type|$grp|$srv"
-            first_answer="${STATS_RECORD_ANSWER[$key]}"
-            [[ -n "$first_answer" ]] && break
-        done
-        
-        cat >> "$TEMP_SECTION_RECORD" <<EOF
-        <div class="answer-box">
-            <strong>Answer:</strong><br>
-            $(echo "$first_answer" | head -c 200)
-        </div>
-        <div class="server-list">
-            <strong>Servers:</strong>
-EOF
-        
-        # Add clickable server badges
-        for srv in $srv_list; do
-            local key="$target|$rec_type|$grp|$srv"
-            local lid="${LIDS_RECORD_RES[$key]}"
-            local lat="${STATS_RECORD_LATENCY[$key]:-0}"
-            local status="${STATS_RECORD_RES[$key]}"
-            
-            if [[ -n "$lid" ]]; then
-                echo "            <span class=\"server-badge log-trigger\" data-lid=\"$lid\" data-title=\"Query: $target $rec_type @ $srv\" style=\"cursor:pointer;\">$srv (${lat}ms)</span>" >> "$TEMP_SECTION_RECORD"
-            else
-                echo "            <span class=\"server-badge\">$srv (${lat}ms)</span>" >> "$TEMP_SECTION_RECORD"
-            fi
-        done
-        
-        echo "        </div>" >> "$TEMP_SECTION_RECORD"
-        
-    else
-        # DIVERGENT - show grouped answers
-        cat >> "$TEMP_SECTION_RECORD" <<EOF
-        <div class="divergence-analysis">
-            <p style="color: var(--accent-warning); margin-bottom: 10px;">
-                <strong>⚠️ Inconsistency Detected:</strong> $unique_answers distinct answers found
-            </p>
-EOF
-        
-        # Group servers by answer
-        declare -A answer_groups
-        for srv in $srv_list; do
-            local key="$target|$rec_type|$grp|$srv"
-            local ans="${STATS_RECORD_ANSWER[$key]}"
-            local ans_key=$(echo -n "$ans" | tr -d '\n\r' | cut -c1-150)
-            [[ -z "$ans_key" ]] && ans_key="(Empty/Null)"
-            answer_groups["$ans_key"]+="$srv,"
-        done
-        
-        local group_num=1
-        for ans in "${!answer_groups[@]}"; do
-            local srvs_in_group="${answer_groups[$ans]}"
-            srvs_in_group="${srvs_in_group%,}"
-            
-            cat >> "$TEMP_SECTION_RECORD" <<EOF
-            <div class="answer-group">
-                <div class="answer-header">Answer #$group_num ($(echo "$srvs_in_group" | tr ',' '\n' | wc -l) servers)</div>
-                <div class="answer-content">$(echo "$ans" | head -c 200)</div>
-                <div class="server-list">
-EOF
-            
-            IFS=',' read -ra srv_array <<< "$srvs_in_group"
-            for srv in "${srv_array[@]}"; do
-                local key="$target|$rec_type|$grp|$srv"
-                local lid="${LIDS_RECORD_RES[$key]}"
-                local lat="${STATS_RECORD_LATENCY[$key]:-0}"
-                
-                if [[ -n "$lid" ]]; then
-                    echo "                    <span class=\"server-badge log-trigger\" data-lid=\"$lid\" data-title=\"Query: $target $rec_type @ $srv\" style=\"cursor:pointer;\">$srv (${lat}ms)</span>" >> "$TEMP_SECTION_RECORD"
-                else
-                    echo "                    <span class=\"server-badge\">$srv (${lat}ms)</span>" >> "$TEMP_SECTION_RECORD"
-                fi
-            done
-            
-            echo "                </div>" >> "$TEMP_SECTION_RECORD"
-            echo "            </div>" >> "$TEMP_SECTION_RECORD"
-            
-            group_num=$((group_num + 1))
-        done
-        unset answer_groups
-        
-        echo "        </div>" >> "$TEMP_SECTION_RECORD"
-    fi
-    
-    # Close card
-    echo "    </div>" >> "$TEMP_SECTION_RECORD"
-    echo "</details>" >> "$TEMP_SECTION_RECORD"
 }
 # --- 3. RECORD TESTS ---
 run_record_tests() {
@@ -6608,11 +6554,19 @@ run_record_tests() {
     cat >> "$TEMP_SECTION_RECORD" <<EOF
     <div style="margin-top: 50px;">
         <h2>🔍 Record Validation (Records)</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-            Analytical view of DNS record consistency across server groups. 
-            Click on any server to view full query details.
-        </p>
-        <div class="records-container">
+        <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Domain/Record</th>
+                    <th>Type</th>
+                    <th>Group</th>
+                    <th>Status</th>
+                    <th>Server Results</th>
+                    <th>Avg Latency</th>
+                </tr>
+            </thead>
+            <tbody>
 EOF
 
     while IFS=';' read -r domain groups test_types record_types extra_hosts; do
@@ -6797,14 +6751,14 @@ EOF
                     fi
                     
                     # Generate analytical card instead of table row
-                    generate_record_card "$target" "$rec_type" "$grp" "$srv_list" "${STATS_RECORD_CONSISTENCY[\"$target|$rec_type|$grp\"]}" "$unique_answers"
+                    generate_record_row "$target" "$rec_type" "$grp" "$srv_list" "${STATS_RECORD_CONSISTENCY[\"$target|$rec_type|$grp\"]}" "$unique_answers"
                 done
             done
         done
     done < "$FILE_DOMAINS"
     echo ""
     
-    echo "</div></div>" >> "$TEMP_SECTION_RECORD"
+    echo "</tbody></table></div></div>" >> "$TEMP_SECTION_RECORD"
 }
 
 main() {
