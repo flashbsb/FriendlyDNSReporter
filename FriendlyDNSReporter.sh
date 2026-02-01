@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ==============================================
-# SCRIPT FriendlyDNSReporter - EXECUTIVE EDITION
-# Versão: 1.0.0
-# "Executive Scorecard - Terminal Edition"
+# SCRIPT FriendlyDNSReporter - INITIAL EDITION
+# Versão: 1.0.2
+# "Initial Edition"
 
 # --- CONFIGURAÇÕES GERAIS ---
-SCRIPT_VERSION="1.0.0"
+SCRIPT_VERSION="1.0.2"
 PRODUCT_SLOGAN="FriendlyDNSReporter. Because it is always DNS. Or not. FriendlyDNSReporter runs automated DNS tests, replaces endless manual dig commands, and produces colorful HTML reports so you can prove it was DNS. Or discover new, exciting doubts"
 
 # Carrega configurações externas
@@ -19,8 +19,8 @@ if [[ -f "$PWD/$CONFIG_FILE_NAME" ]]; then
 elif [[ -f "$SCRIPT_DIR/$CONFIG_FILE_NAME" ]]; then
     CONFIG_FILE="$SCRIPT_DIR/$CONFIG_FILE_NAME"
 else
-    echo "ERRO CRÍTICO: Arquivo de configuração '$CONFIG_FILE_NAME' não encontrado!"
-    echo "Por favor, certifique-se de que o arquivo esteja no diretório atual ou do script."
+    echo "CRITICAL ERROR: Configuration file '$CONFIG_FILE_NAME' not found!"
+    echo "Please ensure the file is in the current directory or the script directory."
     exit 1
 fi
 source "$CONFIG_FILE"
@@ -277,152 +277,152 @@ init_html_parts() {
 # ==============================================
 
 print_help_text() {
-    echo -e "${PURPLE}DESCRIÇÃO GERAL:${NC}"
+    echo -e "${PURPLE}GENERAL DESCRIPTION:${NC}"
     echo -e "  $PRODUCT_SLOGAN"
     echo -e ""
-    echo -e "  Esta ferramenta é um auditor de infraestrutura DNS projetado para validar a"
-    echo -e "  confiabilidade, consistência e performance de servidores autoritativos e recursivos."
+    echo -e "  This tool is a DNS infrastructure auditor designed to validate the"
+    echo -e "  reliability, consistency, and performance of authoritative and recursive servers."
     echo -e ""
-    echo -e "  O script executa uma bateria de testes para cada domínio alvo contra um grupo de"
-    echo -e "  servidores DNS definidos, identificando:"
-    echo -e "   1. ${CYAN}Disponibilidade:${NC} Se os servidores estão alcançáveis (ICMP/TCP)."
-    echo -e "   2. ${CYAN}Consistência:${NC} Se múltiplos servidores retornam a mesma resposta (SOAs, IPs)."
-    echo -e "   3. ${CYAN}Estabilidade:${NC} Se a resposta varia ao longo de múltiplas consultas (Flapping)."
-    echo -e "   4. ${CYAN}Features:${NC} Suporte a TCP (obrigatório RFC 7766) e validação DNSSEC."
-    echo -e "   5. ${CYAN}Performance:${NC} Latência de resposta e perda de pacotes."
-    echo -e "   6. ${CYAN}Segurança:${NC} Transferência de Zona (AXFR), Recursão Aberta e Versão BIND."
+    echo -e "  The script runs a battery of tests for each target domain against a group of"
+    echo -e "  defined DNS servers, identifying:"
+    echo -e "   1. ${CYAN}Availability:${NC} If servers are reachable (ICMP/TCP)."
+    echo -e "   2. ${CYAN}Consistency:${NC} If multiple servers return the same response (SOAs, IPs)."
+    echo -e "   3. ${CYAN}Stability:${NC} If the response varies over multiple queries (Flapping)."
+    echo -e "   4. ${CYAN}Features:${NC} TCP support (RFC 7766) and DNSSEC validation."
+    echo -e "   5. ${CYAN}Performance:${NC} Response latency and packet loss."
+    echo -e "   6. ${CYAN}Security:${NC} Zone Transfer (AXFR), Open Recursion, and BIND Version."
     echo -e ""
-    echo -e "${PURPLE}MODOS DE OPERAÇÃO:${NC}"
-    echo -e "  ${YELLOW}Modo Interativo (Padrão):${NC} Um wizard guia a configuração das variáveis antes do início."
-    echo -e "  ${YELLOW}Modo Silencioso (-y):${NC} Executa imediatamente usando os valores padrão ou editados no script."
+    echo -e "${PURPLE}OPERATION MODES:${NC}"
+    echo -e "  ${YELLOW}Interactive Mode (Default):${NC} A wizard guides configuration before starting."
+    echo -e "  ${YELLOW}Silent Mode (-y):${NC} Executes immediately using default or edited values."
     echo -e ""
-    echo -e "${PURPLE}OPÇÕES DE LINHA DE COMANDO:${NC}"
-    echo -e "  ${GREEN}-n <arquivo>${NC}   Define arquivo CSV de domínios (Padrão: ${GRAY}domains_tests.csv${NC})"
-    echo -e "  ${GREEN}-g <arquivo>${NC}   Define arquivo CSV de grupos DNS (Padrão: ${GRAY}dns_groups.csv${NC})"
-    echo -e "  ${GREEN}-l${NC}            Habilita geração de log em texto (.log)."
-    echo -e "  ${GREEN}-y${NC}            Bypassa o menu interativo (Non-interactive/Batch execution)."
-    echo -e "  ${GREEN}-v${NC}            Aumenta Verbose (Nível 2: Logs CMD). Use -vv para Nível 3 (Debug total)."
-    echo -e "  ${GREEN}-q${NC}            Modo Quieto (Nível 0: Apenas progresso)."
+    echo -e "${PURPLE}COMMAND LINE OPTIONS:${NC}"
+    echo -e "  ${GREEN}-n <file>${NC}      Define domains CSV file (Default: ${GRAY}domains_tests.csv${NC})"
+    echo -e "  ${GREEN}-g <file>${NC}      Define DNS groups CSV file (Default: ${GRAY}dns_groups.csv${NC})"
+    echo -e "  ${GREEN}-l${NC}             Enable text logging (.log)."
+    echo -e "  ${GREEN}-y${NC}             Bypass interactive menu (Non-interactive/Batch execution)."
+    echo -e "  ${GREEN}-v${NC}             Increase Verbose (Level 2: CMD Logs). Use -vv for Level 3 (Debug)."
+    echo -e "  ${GREEN}-q${NC}             Quiet Mode (Level 0: Progress only)."
     echo -e ""
-    echo -e "  ${GREEN}-j${NC}            Gera saída em JSON estruturado (.json)."
-    echo -e "  ${GRAY}Nota: O relatório HTML Detalhado é gerado por padrão.${NC}"
+    echo -e "  ${GREEN}-j${NC}             Generate structured JSON output (.json)."
+    echo -e "  ${GRAY}Note: Detailed HTML report is generated by default.${NC}"
     echo -e ""
-    echo -e "  ${GREEN}-t${NC}            Habilita testes de conectividade TCP (Sobrescreve conf)."
-    echo -e "  ${GREEN}-d${NC}            Habilita validação DNSSEC (Sobrescreve conf)."
-    echo -e "  ${GREEN}-x${NC}            Habilita teste de transferência de zona (AXFR) (Sobrescreve conf)."
-    echo -e "  ${GREEN}-r${NC}            Habilita teste de recursão aberta (Sobrescreve conf)."
-    echo -e "  ${GREEN}-T${NC}            Habilita traceroute (Rota)."
-    echo -e "  ${GREEN}-V${NC}            Habilita verificação de versão BIND (Chaos)."
-    echo -e "  ${GREEN}-Z${NC}            Habilita verificação de sincronismo SOA."
-    echo -e "  ${GREEN}-M${NC}            Habilita todos os testes Modernos (EDNS, Cookie, TLS, DoT, DoH)."
-    echo -e "  ${GREEN}-h${NC}            Exibe este manual detalhado."
+    echo -e "  ${GREEN}-t${NC}             Enable TCP connectivity tests (Overrides conf)."
+    echo -e "  ${GREEN}-d${NC}             Enable DNSSEC validation (Overrides conf)."
+    echo -e "  ${GREEN}-x${NC}             Enable Zone Transfer test (AXFR) (Overrides conf)."
+    echo -e "  ${GREEN}-r${NC}             Enable Open Recursion test (Overrides conf)."
+    echo -e "  ${GREEN}-T${NC}             Enable Traceroute."
+    echo -e "  ${GREEN}-V${NC}             Enable BIND version check (Chaos)."
+    echo -e "  ${GREEN}-Z${NC}             Enable SOA sync check."
+    echo -e "  ${GREEN}-M${NC}             Enable all Modern tests (EDNS, Cookie, TLS, DoT, DoH)."
+    echo -e "  ${GREEN}-h${NC}             Show this detailed manual."
     echo -e ""
-    echo -e "${PURPLE}DICIONÁRIO DE VARIÁVEIS (Configuração Fina):${NC}"
-    echo -e "  Abaixo estão as variáveis que controlam o comportamento do motor de testes."
-    echo -e "  Elas podem ser ajustadas editando o cabeçalho do script ou via menu interativo."
+    echo -e "${PURPLE}VARIABLE DICTIONARY (Fine Tuning):${NC}"
+    echo -e "  Below are the variables controlling the test engine behavior."
+    echo -e "  They can be adjusted by editing the script header or via the interactive menu."
     echo -e ""
     echo -e "  ${CYAN}TIMEOUT${NC}"
-    echo -e "      Define o tempo máximo (em segundos) que o script aguarda por respostas de rede."
-    echo -e "      Afeta pings, traceroutes e consultas DIG. Default seguro: 4s."
+    echo -e "      Sets maximum time (in seconds) to wait for network responses."
+    echo -e "      Affects pings, traceroutes, and DIG queries. Safe default: 4s."
     echo -e ""
-    echo -e "  ${CYAN}CONSISTENCY_CHECKS${NC} (Padrão: 3)"
-    echo -e "      Define quantas vezes a MESMA consulta será repetida para o MESMO servidor."
-    echo -e "      Se o servidor responder IPs diferentes nessas N tentativas, ele é marcado como"
-    echo -e "      ${PURPLE}DIVERGENTE (~)${NC}. Isso pega balanceamentos Round-Robin mal configurados."
+    echo -e "  ${CYAN}CONSISTENCY_CHECKS${NC} (Default: 3)"
+    echo -e "      Defines how many times the SAME query will be repeated for the SAME server."
+    echo -e "      If the server returns different IPs in these N attempts, it is marked as"
+    echo -e "      ${PURPLE}DIVERGENT (~)${NC}. This catches poorly configured Round-Robin."
     echo -e ""
-    echo -e "  ${CYAN}SLEEP${NC} (Padrão: 0.01s)"
-    echo -e "      Pausa entre cada tentativa do loop de consistência. Aumente se o firewall"
-    echo -e "      do alvo estiver bloqueando as requisições por rate-limit."
+    echo -e "  ${CYAN}SLEEP${NC} (Default: 0.01s)"
+    echo -e "      Pause between each attempt in the consistency loop. Increase if target"
+    echo -e "      firewall is blocking requests due to rate-limiting."
     echo -e ""
     echo -e "  ${CYAN}STRICT_IP_CHECK${NC} (true/false)"
-    echo -e "      ${GREEN}true:${NC} Exige que o IP de resposta seja IDÊNTICO em todas as tentativas."
-    echo -e "      ${GREEN}false:${NC} Aceita IPs diferentes (útil para CDNs ou pools de balanceamento)."
+    echo -e "      ${GREEN}true:${NC} Requires the response IP to be IDENTICAL in all attempts."
+    echo -e "      ${GREEN}false:${NC} Accepts different IPs (useful for CDNs or load balancing pools)."
     echo -e ""
     echo -e "  ${CYAN}STRICT_ORDER_CHECK${NC} (true/false)"
-    echo -e "      ${GREEN}true:${NC} A ordem dos registros (ex: NS1 antes de NS2) deve ser idêntica."
-    echo -e "      ${GREEN}false:${NC} A ordem é ignorada, desde que o conteúdo seja o mesmo."
+    echo -e "      ${GREEN}true:${NC} Record order (e.g., NS1 before NS2) must be identical."
+    echo -e "      ${GREEN}false:${NC} Order is ignored, as long as content is the same."
     echo -e ""
     echo -e "  ${CYAN}STRICT_TTL_CHECK${NC} (true/false)"
-    echo -e "      ${GREEN}true:${NC} Considera erro se o TTL mudar entre consultas (ex: 300 -> 299)."
-    echo -e "      ${GREEN}false:${NC} Ignora variações de TTL (Comportamento recomendado para recursivos)."
+    echo -e "      ${GREEN}true:${NC} Considers error if TTL changes between queries (e.g., 300 -> 299)."
+    echo -e "      ${GREEN}false:${NC} Ignores TTL variations (Recommended behavior for recursive servers)."
     echo -e ""
     echo -e "  ${CYAN}ENABLE_PING / PING_COUNT / PING_TIMEOUT${NC}"
-    echo -e "      Módulo de latência ICMP. Executa N pings antes dos testes DNS para verificar"
-    echo -e "      a saúde básica da rota e perda de pacotes."
+    echo -e "      ICMP Latency Module. Runs N pings before DNS tests to verify"
+    echo -e "      basic route health and packet loss."
     echo -e ""
     echo -e "  ${CYAN}CHECK_BIND_VERSION${NC}"
-    echo -e "      Tenta extrair a versão do software DNS usando consultas CHAOS TXT."
-    echo -e "      (Geralmente bloqueado por segurança em servidores de produção)."
+    echo -e "      Attempts to extract DNS software version using CHAOS TXT queries."
+    echo -e "      (Usually blocked for security on production servers)."
     echo -e ""
     echo -e "  ${CYAN}ENABLE_JSON_REPORT${NC}
-      Controla a geração do JSON. Padrão: false.
+      Controls JSON generation. Default: false.
       
   ${CYAN}ENABLE_TCP_CHECK / ENABLE_DNSSEC_CHECK${NC}"
-    echo -e "      Ativa verificações de conformidade RFC 7766 (TCP) e suporte a DNSSEC."
+    echo -e "      Enables RFC 7766 compliance checks (TCP) and DNSSEC support."
     echo -e ""
     echo -e "  ${CYAN}ENABLE_AXFR_CHECK / ENABLE_RECURSION_CHECK${NC}"
-    echo -e "      Testes de segurança para permissividade de transferência de zona e recursão."
+    echo -e "      Security tests for zone transfer permissiveness and recursion."
     echo -e "      "
     echo -e "  ${CYAN}ENABLE_SOA_SERIAL_CHECK${NC}
-      Verifica se os números de série SOA são idênticos entre todos os servidores do grupo.
+      Verifies if SOA serial numbers are identical across all servers in the group.
 
   ${CYAN}ENABLE_EDNS_CHECK / ENABLE_COOKIE_CHECK${NC}
-      Verificam suporte a EDNS0 (RFC 6891) e DNS Cookies (RFC 7873).
+      Verify support for EDNS0 (RFC 6891) and DNS Cookies (RFC 7873).
 
   ${CYAN}ENABLE_TLS_CHECK / ENABLE_DOT_CHECK / ENABLE_DOH_CHECK${NC}
-      Verificam suporte a transporte criptografado (TLS/853 e HTTPS/443).
+      Verify support for encrypted transport (TLS/853 and HTTPS/443).
 "
     echo -e ""
     echo -e "  ${CYAN}LATENCY_WARNING_THRESHOLD${NC} (Default: 300ms)"
-    echo -e "      Define o limiar para alertas amarelos de lentidão."
+    echo -e "      Sets threshold for yellow slowness alerts."
     echo -e ""
     echo -e "  ${CYAN}PING_PACKET_LOSS_LIMIT${NC} (Default: 10%)"
-    echo -e "      Define a porcentagem aceitável de perda de pacotes antes de marcar como UNSTABLE."
+    echo -e "      Sets acceptable packet loss percentage before marking as UNSTABLE."
     echo -e ""
 
-    echo -e "      Executa traceroute para cada IP alvo para identificar o caminho de rede."
+    echo -e "      Runs traceroute for each target IP to identify network path."
     echo -e ""
     echo -e "  ${CYAN}VALIDATE_CONNECTIVITY${NC} (true/false)"
-    echo -e "      Testa se a porta 53 (TCP/UDP) está aberta antes de tentar consultas DNS."
-    echo -e "      Evita timeouts desnecessários em servidores offline."
+    echo -e "      Tests if port 53 (TCP/UDP) is open before attempting DNS queries."
+    echo -e "      Avoids unnecessary timeouts on offline servers."
     echo -e ""
     echo -e "  ${CYAN}ONLY_TEST_ACTIVE_GROUPS${NC} (true/false)"
-    echo -e "      Se true, executa testes de Ping/Trace/Security APENAS nos servidores que"
-    echo -e "      estão sendo usados pelos domínios do CSV de testes."
+    echo -e "      If true, runs Ping/Trace/Security tests ONLY on servers that"
+    echo -e "      are being used by the domains in the test CSV."
     echo -e ""
     echo -e "  ${CYAN}LOG_PREFIX${NC}"
-    echo -e "      Prefixo dos arquivos de log gerados na pasta logs/."
+    echo -e "      Prefix for log files generated in logs/ folder."
     echo -e ""
     echo -e "  ${CYAN}DIG_OPTIONS (DEFAULT/RECURSIVE)${NC}"
-    echo -e "      Opções avançadas passadas ao binário 'dig'. Útil para ajustes de buffer,"
-    echo -e "      cookies ou flag +cd."
+    echo -e "      Advanced options passed to 'dig' binary. Useful for buffer adjustments,"
+    echo -e "      cookies, or +cd flag."
     echo -e ""
     echo -e "  ${CYAN}ENABLE_LOG_TEXT / VERBOSE${NC}"
-    echo -e "      Controle de verbosidade e geração de log forense em texto plano (.log)."
-    echo -e "      Níveis: 0 (Quiet), 1 (Summary), 2 (Verbose), 3 (Debug)."
+    echo -e "      Verbosity control and forensic plain text log generation (.log)."
+    echo -e "      Levels: 0 (Quiet), 1 (Summary), 2 (Verbose), 3 (Debug)."
     echo -e ""
     echo -e "  ${CYAN}COLOR_OUTPUT${NC} (true/false)"
-    echo -e "      Habilita ou desabilita cores no terminal ANSI."
+    echo -e "      Enables or disables ANSI terminal colors."
     echo -e ""
-    echo -e "${PURPLE}LEGENDA DE SAÍDA (O que significam os símbolos?):${NC}"
-    echo -e "  ${GREEN}.${NC} (Ponto)      = Sucesso (Resposta consistente e válida)."
-    echo -e "  ${YELLOW}!${NC} (Exclamação)= Alerta (Sucesso, mas servidor lento ou resposta estranha)."
-    echo -e "  ${PURPLE}~${NC} (Til)       = Divergência (O servidor mudou a resposta durante o teste)."
-    echo -e "  ${RED}x${NC} (Xis)        = Falha Crítica (Timeout, Erro de Conexão, REFUSED)."
-    echo -e "  ${RED}T${NC} / ${GREEN}T${NC}        = Status do Teste TCP (Falha/Sucesso)."
-    echo -e "  ${RED}D${NC} / ${GREEN}D${NC} / ${GRAY}D${NC}    = Status do Teste DNSSEC (Falha/Sucesso/Ausente)."
+    echo -e "${PURPLE}OUTPUT LEGEND (What do symbols mean?):${NC}"
+    echo -e "  ${GREEN}.${NC} (Dot)        = Success (Consistent and valid response)."
+    echo -e "  ${YELLOW}!${NC} (Exclamation)= Alert (Success, but slow server or strange response)."
+    echo -e "  ${PURPLE}~${NC} (Tilde)      = Divergence (Server changed response during test)."
+    echo -e "  ${RED}x${NC} (X)           = Critical Failure (Timeout, Connection Error, REFUSED)."
+    echo -e "  ${RED}T${NC} / ${GREEN}T${NC}        = TCP Test Status (Fail/Success)."
+    echo -e "  ${RED}D${NC} / ${GREEN}D${NC} / ${GRAY}D${NC}    = DNSSEC Test Status (Fail/Success/Absent)."
     echo -e ""
-    echo -e "  ${BLUE}--- LEGENDAS DE SEGURANÇA ---${NC}"
-    echo -e "  ${GREEN}HIDDEN/DENIED/CLOSED${NC} = Restrito (OK)"
-    echo -e "  ${RED}REVEALED/ALLOWED/OPEN${NC} = Risco (Falha de Segurança)"
-    echo -e "  ${GRAY}TIMEOUT/ERROR${NC}       = Erro de Rede (Inconclusivo)"
+    echo -e "  ${BLUE}--- SECURITY LEGENDS ---${NC}"
+    echo -e "  ${GREEN}HIDDEN/DENIED/CLOSED${NC} = Restricted (OK)"
+    echo -e "  ${RED}REVEALED/ALLOWED/OPEN${NC} = Risk (Security Fail)"
+    echo -e "  ${GRAY}TIMEOUT/ERROR${NC}       = Network Error (Inconclusive)"
     echo -e ""
 }
 
 show_help() {
     clear
     echo -e "${CYAN}==============================================================================${NC}"
-    echo -e "${CYAN}   📚 FriendlyDNSReporter - MANUAL DE REFERÊNCIA (v${SCRIPT_VERSION})    ${NC}"
+    echo -e "${CYAN}   📚 FriendlyDNSReporter - REFERENCE MANUAL (v${SCRIPT_VERSION})        ${NC}"
     echo -e "${CYAN}==============================================================================${NC}"
     echo -e ""
     print_help_text
@@ -457,7 +457,7 @@ generate_help_html() {
     
     cat > "$LOG_OUTPUT_DIR/temp_help_${SESSION_ID}.html" << EOF
         <details class="section-details" style="margin-top: 40px; border-left: 4px solid #64748b;">
-            <summary style="font-size: 1.1rem; font-weight: 600;">📚 Manual de Referência (Help)</summary>
+            <summary style="font-size: 1.1rem; font-weight: 600;">📚 Reference Manual (Help)</summary>
             <div class="modal-body" style="background: #1e293b; color: #cbd5e1; padding: 20px; font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-size: 0.85rem; overflow-x: auto;">
                 <pre style="white-space: pre-wrap;">$help_content</pre>
             </div>
@@ -482,24 +482,24 @@ print_execution_summary() {
          echo ""
     fi
     
-    echo -e "${BLUE}[1. GERAL]${NC}"
-    echo -e "  🏷️  Versão Script   : v${SCRIPT_VERSION}"
-    echo -e "  📂 Arq. Domínios   : $FILE_DOMAINS"
-    echo -e "  📂 Arq. Grupos     : $FILE_GROUPS"
-    echo -e "  📂 Dir Logs        : $LOG_DIR (Prefix: $LOG_PREFIX)"
-    echo -e "  ⏱️  Timeout Global  : ${TIMEOUT}s"
+    echo -e "${BLUE}[1. GENERAL]${NC}"
+    echo -e "  🏷️  Script Ver      : v${SCRIPT_VERSION}"
+    echo -e "  📂 Domains File    : $FILE_DOMAINS"
+    echo -e "  📂 Groups File     : $FILE_GROUPS"
+    echo -e "  📂 Log Dir         : $LOG_DIR (Prefix: $LOG_PREFIX)"
+    echo -e "  ⏱️  Global Timeout  : ${TIMEOUT}s"
     echo -e "  💤 Sleep (Query)   : ${SLEEP}s"
-    echo -e "  📡 Valida Conexão  : ${CYAN}${VALIDATE_CONNECTIVITY}${NC}"
-    echo -e "  🛡️  Limit. Grupos   : ${CYAN}${ONLY_TEST_ACTIVE_GROUPS}${NC} (Active Only)"
-    echo -e "  🎮 Modo Interativo : ${CYAN}${INTERACTIVE_MODE}${NC}"
+    echo -e "  📡 Conn. Valid.    : ${CYAN}${VALIDATE_CONNECTIVITY}${NC}"
+    echo -e "  🛡️  Group Limit     : ${CYAN}${ONLY_TEST_ACTIVE_GROUPS}${NC} (Active Only)"
+    echo -e "  🎮 Interactive Mode: ${CYAN}${INTERACTIVE_MODE}${NC}"
 
-    echo -e "\n${BLUE}[2. ESCOPO (FASES)]${NC}"
-    echo -e "  1️⃣  Fase Servidor   : ${CYAN}${ENABLE_PHASE_SERVER}${NC}"
-    echo -e "  2️⃣  Fase Zona       : ${CYAN}${ENABLE_PHASE_ZONE}${NC}"
-    echo -e "  3️⃣  Fase Registro   : ${CYAN}${ENABLE_PHASE_RECORD}${NC}"
+    echo -e "\n${BLUE}[2. SCOPE (PHASES)]${NC}"
+    echo -e "  1️⃣  Server Phase    : ${CYAN}${ENABLE_PHASE_SERVER}${NC}"
+    echo -e "  2️⃣  Zone Phase      : ${CYAN}${ENABLE_PHASE_ZONE}${NC}"
+    echo -e "  3️⃣  Record Phase    : ${CYAN}${ENABLE_PHASE_RECORD}${NC}"
 
     if [[ "$ENABLE_PHASE_SERVER" == "true" ]]; then
-        echo -e "\n${PURPLE}[3. DETALHES FASE 1: SERVIDORES]${NC}"
+        echo -e "\n${PURPLE}[3. PHASE 1 DETAILS: SERVERS]${NC}"
         echo -e "  🏓 Ping Check      : ${CYAN}${ENABLE_PING}${NC}"
         [[ "$ENABLE_PING" == "true" ]] && echo -e "     ↳ Count: $PING_COUNT | Timeout: ${PING_TIMEOUT}s | LossLimit: ${PING_PACKET_LOSS_LIMIT}%"
         echo -e "  🗺️  Traceroute     : ${CYAN}${ENABLE_TRACE}${NC}"
@@ -517,33 +517,33 @@ print_execution_summary() {
     fi
 
     if [[ "$ENABLE_PHASE_ZONE" == "true" ]]; then
-        echo -e "\n${PURPLE}[4. DETALHES FASE 2: ZONAS]${NC}"
+        echo -e "\n${PURPLE}[4. PHASE 2 DETAILS: ZONES]${NC}"
         echo -e "  🔄 SOA Serial Sync : ${CYAN}${ENABLE_SOA_SERIAL_CHECK}${NC}"
         echo -e "  🌍 AXFR Check      : ${CYAN}${ENABLE_AXFR_CHECK}${NC}"
     fi
 
     if [[ "$ENABLE_PHASE_RECORD" == "true" ]]; then
-        echo -e "\n${PURPLE}[5. DETALHES FASE 3: REGISTROS]${NC}"
-        echo -e "  🔄 Consistência    : ${CONSISTENCY_CHECKS} queries/servidor"
+        echo -e "\n${PURPLE}[5. PHASE 3 DETAILS: RECORDS]${NC}"
+        echo -e "  🔄 Consistency     : ${CONSISTENCY_CHECKS} queries/server"
         echo -e "  ⚖️  Strict IP       : ${CYAN}${STRICT_IP_CHECK}${NC}"
-        echo -e "  ⚖️  Strict Ordem    : ${CYAN}${STRICT_ORDER_CHECK}${NC}"
+        echo -e "  ⚖️  Strict Order    : ${CYAN}${STRICT_ORDER_CHECK}${NC}"
         echo -e "  ⚖️  Strict TTL      : ${CYAN}${STRICT_TTL_CHECK}${NC}"
     fi
 
-    echo -e "\n${PURPLE}[6. CONFIG AVANÇADA]${NC}"
-    echo -e "  ⚠️  Limiar Latência (Ping) : ${LATENCY_WARNING_THRESHOLD}ms"
-    echo -e "  ⚠️  Limiar Latência (DNS)  : ${DNS_LATENCY_WARNING_THRESHOLD}ms (Purple < ${DNS_LATENCY_MIN_THRESHOLD}ms)"
+    echo -e "\n${PURPLE}[6. ADVANCED CONFIG]${NC}"
+    echo -e "  ⚠️  Latency Thresh. (Ping) : ${LATENCY_WARNING_THRESHOLD}ms"
+    echo -e "  ⚠️  Latency Thresh. (DNS)  : ${DNS_LATENCY_WARNING_THRESHOLD}ms (Purple < ${DNS_LATENCY_MIN_THRESHOLD}ms)"
     echo -e "  🛠️  Dig (Std)       : ${GRAY}${DEFAULT_DIG_OPTIONS}${NC}"
     echo -e "  🛠️  Dig (Rec)       : ${GRAY}${RECURSIVE_DIG_OPTIONS}${NC}"
     echo -e "  📢 Verbose All      : ${VERBOSE_LEVEL} (0-3)"
 
-    echo -e "\n${PURPLE}[7. RELATÓRIOS]${NC}"
-    echo -e "  📄 Relatório HTML   : ${GREEN}${ENABLE_HTML_REPORT}${NC} (Charts: ${ENABLE_CHARTS})"
-    echo -e "  📄 Relatório JSON   : ${CYAN}${ENABLE_JSON_REPORT}${NC}"
-    echo -e "  📄 Relatório CSV    : ${CYAN}${ENABLE_CSV_REPORT}${NC}"
+    echo -e "\n${PURPLE}[7. REPORTS]${NC}"
+    echo -e "  📄 HTML Report      : ${GREEN}${ENABLE_HTML_REPORT}${NC} (Charts: ${ENABLE_CHARTS}, Lang: ${HTML_REPORT_LANG})"
+    echo -e "  📄 JSON Report      : ${CYAN}${ENABLE_JSON_REPORT}${NC}"
+    echo -e "  📄 CSV Report       : ${CYAN}${ENABLE_CSV_REPORT}${NC}"
     
-    echo -e "\n${PURPLE}[8. LOGS & SAÍDA]${NC}"
-    echo -e "  📝 Log Texto (.log) : ${CYAN}${ENABLE_LOG_TEXT}${NC}"
+    echo -e "\n${PURPLE}[8. LOGS & OUTPUT]${NC}"
+    echo -e "  📝 Text Log (.log)  : ${CYAN}${ENABLE_LOG_TEXT}${NC}"
 
     echo -e "  🎨 Color Output     : ${COLOR_OUTPUT}"
     echo -e "  📂 Output Dir       : $LOG_DIR"
@@ -729,116 +729,414 @@ ask_boolean() {
     fi
 }
 
+
+load_html_strings() {
+    # Default to PT logic if not explicitly EN
+    local lang="${HTML_REPORT_LANG:-pt}"
+    lang=${lang,,} # lowercase
+
+    if [[ "$lang" == "en" ]]; then
+        # --- ENGLISH STRINGS ---
+        L_RPT_TITLE="DNS Health Report"
+        L_RPT_SUBTITLE="Connectivity, Security & Consistency Analysis"
+        
+        # Tabs
+        L_TAB_DASH="Dashboard"
+        L_TAB_SRV="Servers"
+        L_TAB_ZONE="Zones"
+        L_TAB_REC="Records"
+        L_TAB_BACK="Backstage"
+        L_TAB_HELP="Help & About"
+        L_TAB_LOGS="Verbose Logs"
+        
+        # Card Titles & Descriptions (Long)
+        L_CRD_NET="Network Health"
+        L_DESC_NET="Connectivity & Latency"
+        L_DESC_NET_LONG="Measures the **Average Health** of servers (Ping, Ports, Latency). Click for details."
+        L_DESC_NET_BODY="The current score <strong>\${score_network}/100</strong> represents the <strong>Average Infrastructure Health</strong>. Each server is evaluated individually (100 pts) and loses points for failures. The final score is the global average."
+        
+        L_CRD_STAB="Service Stability"
+        L_DESC_STAB="Success Rate & Sync"
+        L_DESC_STAB_LONG="Reflects the **Global Success Rate** of queries and consistency. Click to view failures."
+        L_DESC_STAB_BODY="The current score <strong>\${score_stability}/100</strong> represents the <strong>Global Success Index</strong>. It's calculated by the percentage of successful queries (OK/NXDOMAIN) relative to the total executed."
+        
+        L_CRD_SEC="Security Posture"
+        L_DESC_SEC="DNSSEC, TLS & Privacy"
+        L_DESC_SEC_LONG="Measures **Average Compliance** (AXFR, Version, Recursion). Click for details."
+        L_DESC_SEC_BODY="The current score <strong>\${score_security}/100</strong> represents the <strong>Average Compliance Rate</strong>. Each server scores points for best practices: Recursion Closed (+40), AXFR Denied (+40), and Version Hidden (+20)."
+        
+        L_CRD_MOD="Modern Standards"
+        L_DESC_MOD="EDNS, IPv6, DoH/DoT"
+        L_DESC_MOD_LONG="Measures **Average Adoption** of modern features (EDNS, TCP, DNSSEC). Click to view score."
+        L_DESC_MOD_BODY="The current score <strong>\${score_modernity}/100</strong> represents the <strong>Feature Adoption Rate</strong>. Each server scores points for supporting modern features: EDNS (+25), TCP (+25), DNSSEC (+25), and Encryption (+25)."
+        
+        # Dashboard Parity Grid
+        L_LBL_GENERAL="GENERAL"
+        L_Row_Conn="Connectivity"
+        L_Row_Ports="Ports (53/853)"
+        L_Row_Config="Config (Ver/Rec)"
+        L_Row_Feat="Features"
+        L_Row_Sec="Security"
+        L_Row_SOA="SOA Sync"
+        L_Row_AXFR="AXFR"
+        L_Row_Sig="Signatures"
+        L_Row_Succ="Successes"
+        L_Row_Res="Results"
+        L_Row_Cons="Consistency"
+
+        # General Labels
+        L_LBL_VERSION="Version"
+        L_LBL_EXECITON="Execution"
+        L_LBL_DURATION="Duration"
+        L_LBL_SCOPE="Scope"
+        L_LBL_SERVERS="Servers"
+        L_LBL_ZONES="Zones"
+        L_LBL_RECORDS="Records"
+        L_LBL_LEGEND="Legend"
+        L_LBL_TOTAL_TIME="Total Time"
+        
+        # Messages
+        L_MSG_SIMPLE_MODE_TITLE="Simplified Mode Active"
+        L_MSG_SIMPLE_MODE_BODY="This report was generated in compact mode. Detailed technical logs (dig/trace/ping outputs) were suppressed to reduce file size."
+        L_MSG_EXPAND_ALL="Expand All"
+        L_MSG_COLLAPSE_ALL="Collapse All"
+        
+        # Table Headers (Servers)
+        L_TH_SRV="Server"
+        L_TH_GRP="Group"
+        L_TH_PING="Ping (ICMP)"
+        L_TH_HOPS="Hops"
+        L_TH_LAT="Latency"
+        L_TH_RESP="Resp. Time"
+        L_TH_P53="Port 53"
+        L_TH_P853="Port 853"
+        L_TH_VER="Version"
+        L_TH_REC="Recursion"
+        L_TH_EDNS="EDNS"
+        L_TH_COOK="Cookie"
+        L_TH_SEC="DNSSEC"
+        L_TH_DOH="DoH"
+        L_TH_TLS="TLS"
+
+        # Table Headers (Zones)
+        L_TH_ZONE="Zone"
+        L_TH_SOA="SOA Serial"
+        L_TH_AXFR="AXFR Status"
+        L_TH_SIG="DNSSEC Sig"
+        
+        # Table Headers (Records)
+        L_TH_TYPE="Type"
+        L_TH_RES_SRV="Results (Per Server)"
+        
+        # Backstage
+        L_BK_ENV="Execution Environment"
+        L_BK_USER="User"
+        L_BK_HOST="Hostname"
+        L_BK_KERNEL="Kernel"
+        L_BK_OS="OS"
+        L_BK_SHELL="Shell"
+        L_BK_TERM="Term"
+        L_BK_DIR="Script Dir"
+        L_BK_OUT="Log Output"
+        
+        L_BK_TOOLS="Tool Versions"
+        L_BK_VER="Script Version"
+        
+        L_BK_INPUT="Input Files"
+        L_BK_DOMAINS="Domains"
+        L_BK_GROUPS="DNS Groups"
+        L_BK_CONTENT="View Content (Sample)"
+        
+        L_BK_CONF="Configuration Flags"
+        L_BK_THR="Thresholds & Limits"
+        L_BK_PERF="Performance Metrics"
+        L_BK_START="Start"
+        L_BK_END="End"
+        L_BK_SLEEP="Sleep Time"
+        L_BK_DUR="Total Duration"
+        
+        # Executive Summary
+        L_CRD_DIAG="General Diagnosis"
+        L_LBL_ACTIVE_SRV="Active Servers"
+        L_LBL_INFRA_ID="Infrastructure Identified"
+        L_LBL_AVG_LAT="Avg Latency"
+        L_LBL_PERF_GLOB="Global Performance"
+        L_LBL_SEC_RISKS="Security Risks"
+        L_LBL_RISK_DESC="Version, AXFR, Recursion"
+        L_LBL_DOMAINS="Domains"
+        L_LBL_ZONES_TESTED="Zones Tested"
+        L_LBL_RECS_TESTED="Records Tested"
+        L_CHART_OVERVIEW="Execution Overview"
+        L_CHART_LATENCY="Top Latency (Avg)"
+        
+        # Health Map
+        L_MAP_TITLE="DNS Health Map"
+        L_TH_FAIL_TOTAL="Failures / Total"
+        L_TH_STATUS="General Status"
+        
+        # Disclaimer
+        L_DISCLAIMER_TITLE="DISCLAIMER (Read Me)"
+        L_DISCLAIMER_TEXT="<p>This report reflects only what survived the round trip back to this script, and not necessarily the **Absolute Truth of the Universe™**.</p><p>Remember that between your terminal and the DNS server lies a hostile jungle inhabited by:</p><ul style='margin-left:20px; margin-top:5px; margin-bottom:10px;'><li><strong>Paranoid Firewalls:</strong> Blocking even positive thoughts (and legitimate UDP packets).</li><li><strong>Creative Middleboxes:</strong> Security filters that think your DNS query is a nuclear attack.</li><li><strong>Rate Limits:</strong> Because nobody likes spam, not even the server.</li><li><strong>Load Balancing:</strong> Where different servers answer with different moods.</li></ul><p><strong>Conclusion:</strong> If everything is red, breathe before cursing the DNS admin (check your network). If everything is green, be suspicious.</p>"
+        L_GENERATED_BY="Automatically generated by"
+        L_OFFICIAL_REPO="Official Repository"
+
+    else
+        # --- PORTUGUESE STRINGS (Default) ---
+        L_RPT_TITLE="Relatório de Saúde DNS"
+        L_RPT_SUBTITLE="Análise de Conectividade, Segurança e Consistência"
+        
+        # Tabs
+        L_TAB_DASH="Visão Geral"
+        L_TAB_SRV="Servidores"
+        L_TAB_ZONE="Zonas"
+        L_TAB_REC="Registros"
+        L_TAB_BACK="Bastidores"
+        L_TAB_HELP="Ajuda"
+        L_TAB_LOGS="Logs Verbos"
+        
+        # Card Titles & Descriptions
+        L_CRD_NET="Saúde da Rede"
+        L_DESC_NET="Conectividade e Latência"
+        L_DESC_NET_LONG="Mede a <strong>Saúde Média</strong> dos servidores (Ping, Portas, Latência). Clique para detalhes."
+        L_DESC_NET_BODY="A pontuação atual <strong>\${score_network}/100</strong> representa a <strong>Saúde Média da Infraestrutura</strong>. Cada servidor é avaliado individualmente (100 pts) e perde pontos por falhas. A nota final é a média global."
+        
+        L_CRD_STAB="Estabilidade do Serviço"
+        L_DESC_STAB="Taxa de Sucesso e Sincronismo"
+        L_DESC_STAB_LONG="Reflete a <strong>Taxa de Sucesso Global</strong> das consultas e consistência. Clique para ver falhas."
+        L_DESC_STAB_BODY="A pontuação atual <strong>\${score_stability}/100</strong> representa o <strong>Índice de Sucesso Global</strong>. É calculada pela porcentagem de consultas bem-sucedidas (OK/NXDOMAIN) em relação ao total executado."
+        
+        L_CRD_SEC="Postura de Segurança"
+        L_DESC_SEC="DNSSEC, TLS e Privacidade"
+        L_DESC_SEC_LONG="Mede a <strong>Conformidade Média</strong> (AXFR, Versão, Recursão). Clique para detalhes."
+        L_DESC_SEC_BODY="A pontuação atual <strong>\${score_security}/100</strong> representa a <strong>Taxa de Conformidade Média</strong>. Cada servidor pontua por boas práticas: Recursão Fechada (+40), AXFR Negado (+40) e Versão Oculta (+20)."
+        
+        L_CRD_MOD="Padrões Modernos"
+        L_DESC_MOD="EDNS, IPv6, DoH/DoT"
+        L_DESC_MOD_LONG="Mede a <strong>Adoção Média</strong> de recursos (EDNS, TCP, DNSSEC). Clique para ver pontuação."
+        L_DESC_MOD_BODY="A pontuação atual <strong>\${score_modernity}/100</strong> representa a <strong>Taxa de Adoção de Features</strong>. Cada servidor pontua por suportar recursos modernos: EDNS (+25), TCP (+25), DNSSEC (+25) e Criptografia (+25)."
+
+        # Dashboard Parity Grid
+        L_LBL_GENERAL="GERAL"
+        L_Row_Conn="Conectividade"
+        L_Row_Ports="Portas (53/853)"
+        L_Row_Config="Config (Ver/Rec)"
+        L_Row_Feat="Recursos"
+        L_Row_Sec="Segurança"
+        L_Row_SOA="SOA Sync"
+        L_Row_AXFR="AXFR"
+        L_Row_Sig="Assinaturas"
+        L_Row_Succ="Sucessos"
+        L_Row_Res="Resultados"
+        L_Row_Cons="Consistência"
+        
+        # General Labels
+        L_LBL_VERSION="Versão"
+        L_LBL_EXECITON="Execução"
+        L_LBL_DURATION="Duração"
+        L_LBL_SCOPE="Escopo"
+        L_LBL_SERVERS="Servidores"
+        L_LBL_ZONES="Zonas"
+        L_LBL_RECORDS="Registros"
+        L_LBL_LEGEND="Legenda"
+        L_LBL_TOTAL_TIME="Tempo Total"
+        
+        # Messages
+        L_MSG_SIMPLE_MODE_TITLE="Modo Simplificado Ativo"
+        L_MSG_SIMPLE_MODE_BODY="Este relatório foi gerado em modo compacto. Logs técnicos detalhados (outputs de dig, traceroute e ping) foram suprimidos para reduzir o tamanho do arquivo."
+        L_MSG_EXPAND_ALL="Expandir Todos"
+        L_MSG_COLLAPSE_ALL="Colapsar Todos"
+        
+        # Table Headers (Servers)
+        L_TH_SRV="Servidor"
+        L_TH_GRP="Grupos"
+        L_TH_PING="Ping (ICMP)"
+        L_TH_HOPS="Hops"
+        L_TH_LAT="Latência (ICMP)"
+        L_TH_RESP="Tempo Resp."
+        L_TH_P53="Porta 53"
+        L_TH_P853="Porta 853"
+        L_TH_VER="Versão (Bind)"
+        L_TH_REC="Recursão"
+        L_TH_EDNS="EDNS"
+        L_TH_COOK="Cookie"
+        L_TH_SEC="DNSSEC (Val)"
+        L_TH_DOH="DoH (443)"
+        L_TH_TLS="TLS (Hshake)"
+
+        # Table Headers (Zones)
+        L_TH_ZONE="Zona"
+        L_TH_SOA="SOA Serial"
+        L_TH_AXFR="AXFR Status"
+        L_TH_SIG="DNSSEC Sig"
+        
+        # Table Headers (Records)
+        L_TH_TYPE="Tipo"
+        L_TH_RES_SRV="Resultados (Por Servidor)"
+        
+        # Backstage
+        L_BK_ENV="Ambiente de Execução"
+        L_BK_USER="Usuário"
+        L_BK_HOST="Hostname"
+        L_BK_KERNEL="Kernel"
+        L_BK_OS="OS"
+        L_BK_SHELL="Shell"
+        L_BK_TERM="Term"
+        L_BK_DIR="Script Dir"
+        L_BK_OUT="Log Output"
+        
+        L_BK_TOOLS="Versões das Ferramentas"
+        L_BK_VER="Script Version"
+        
+        L_BK_INPUT="Arquivos de Entrada"
+        L_BK_DOMAINS="Domínios"
+        L_BK_GROUPS="Grupos DNS"
+        L_BK_CONTENT="Ver Conteúdo (Amostra)"
+        
+        L_BK_CONF="Flags de Configuração"
+        L_BK_THR="Limiares e Limites"
+        L_BK_PERF="Métricas de Performance"
+        L_BK_START="Início"
+        L_BK_END="Fim"
+        L_BK_SLEEP="Sleep Time"
+        L_BK_DUR="Duração Total"
+        
+        # Executive Summary
+        L_CRD_DIAG="Diagnóstico Geral"
+        L_LBL_ACTIVE_SRV="Servidores Ativos"
+        L_LBL_INFRA_ID="Infraestrutura Identificada"
+        L_LBL_AVG_LAT="Latência Média"
+        L_LBL_PERF_GLOB="Performance Global"
+        L_LBL_SEC_RISKS="Riscos de Segurança"
+        L_LBL_RISK_DESC="Versão, AXFR, Recursão"
+        L_LBL_DOMAINS="Domínios"
+        L_LBL_ZONES_TESTED="Zonas Testadas"
+        L_LBL_RECS_TESTED="Registros Testados"
+        L_CHART_OVERVIEW="Visão Geral de Execução"
+        L_CHART_LATENCY="Top Latência (Médias)"
+        
+        # Health Map
+        L_MAP_TITLE="Mapa de Saúde DNS"
+        L_TH_FAIL_TOTAL="Falhas / Total"
+        L_TH_STATUS="Status Geral"
+        
+        # Disclaimer
+        L_DISCLAIMER_TITLE="AVISO DE ISENÇÃO DE RESPONSABILIDADE (Leia-me)"
+        L_DISCLAIMER_TEXT="<p>Este relatório reflete apenas o que sobreviveu à viagem de volta para este script, e não necessariamente a <strong>Verdade Absoluta do Universo™</strong>.</p><p>Lembre-se que entre o seu terminal e o servidor DNS existe uma selva hostil habitada por:</p><ul style='margin-left:20px; margin-top:5px; margin-bottom:10px;'><li><strong>Firewalls Paranoicos:</strong> Que bloqueiam até pensamento positivo (e pacotes UDP legítimos).</li><li><strong>Middleboxes Criativos:</strong> Filtros de segurança que acham que sua query DNS é um ataque nuclear.</li><li><strong>Rate Limits:</strong> Porque ninguém gosta de spam, nem mesmo o servidor.</li><li><strong>Balanceamento de Carga:</strong> Onde servidores diferentes respondem com humores diferentes.</li></ul><p><strong>Conclusão:</strong> Se estiver tudo vermelho, respire antes de xingar o admin do DNS (verifique sua rede). Se estiver tudo verde, desconfie.</p>"
+        L_GENERATED_BY="Gerado automaticamente por"
+        L_OFFICIAL_REPO="Repositório Oficial"
+    fi
+}
+
 interactive_configuration() {
     if [[ "$INTERACTIVE_MODE" == "false" ]]; then return; fi
     print_execution_summary
-    echo -ne "${YELLOW}❓ Deseja iniciar com as configurações acima? [S/n]: ${NC}"
+    echo -ne "${YELLOW}❓ Do you want to start with the configuration above? [Y/n]: ${NC}"
     read -r response
     response=${response,,}
     if [[ "$response" == "n" || "$response" == "nao" || "$response" == "não" ]]; then
         
         # --- 1. GLOBAL CONFIGURATION ---
-        echo -e "\n${BLUE}--- GERAL (GLOBAL) ---${NC}"
-        ask_variable "Arquivo de Domínios (CSV)" "FILE_DOMAINS"
-        ask_variable "Arquivo de Grupos (CSV)" "FILE_GROUPS"
-        ask_variable "Diretório de Logs" "LOG_DIR"
-        ask_variable "Prefixo arquivos Log" "LOG_PREFIX"
+        echo -e "\n${BLUE}--- GENERAL (GLOBAL) ---${NC}"
+        ask_variable "Domains File (CSV)" "FILE_DOMAINS"
+        ask_variable "Groups File (CSV)" "FILE_GROUPS"
+        ask_variable "Log Directory" "LOG_DIR"
+        ask_variable "Log Files Prefix" "LOG_PREFIX"
         
-        ask_variable "Timeout Global (segundos)" "TIMEOUT"
-        ask_variable "Sleep entre queries (segundos)" "SLEEP"
-        ask_boolean "Validar conectividade porta 53?" "VALIDATE_CONNECTIVITY"
+        ask_variable "Global Timeout (seconds)" "TIMEOUT"
+        ask_variable "Sleep between queries (seconds)" "SLEEP"
+        ask_boolean "Validate connectivity port 53?" "VALIDATE_CONNECTIVITY"
         
-        ask_variable "Nível de Verbose log (0-3)?" "VERBOSE_LEVEL"
-        ask_boolean "Gerar log texto (.log)?" "ENABLE_LOG_TEXT"
-        ask_boolean "Habilitar Gráficos no HTML?" "ENABLE_CHARTS"
-        ask_boolean "Gerar relatório Detalhado HTML?" "ENABLE_HTML_REPORT"
-        ask_boolean "Gerar relatório JSON (Report)?" "ENABLE_JSON_REPORT"
+        ask_variable "Verbose Log Level (0-3)?" "VERBOSE_LEVEL"
+        ask_boolean "Generate text log (.log)?" "ENABLE_LOG_TEXT"
+        ask_boolean "Enable HTML Charts?" "ENABLE_CHARTS"
+        ask_boolean "Generate Detailed HTML Report?" "ENABLE_HTML_REPORT"
+        ask_boolean "Generate JSON Report?" "ENABLE_JSON_REPORT"
 
-        ask_boolean "Gerar relatório CSV (Plano)?" "ENABLE_CSV_REPORT"
+        ask_boolean "Generate CSV Report (Flat)?" "ENABLE_CSV_REPORT"
         
-        ask_boolean "Testar SOMENTE grupos usados por domínios?" "ONLY_TEST_ACTIVE_GROUPS"
+        ask_boolean "Test ONLY groups used by domains?" "ONLY_TEST_ACTIVE_GROUPS"
 
         # --- 2. PHASE SELECTION ---
-        echo -e "\n${BLUE}--- SELEÇÃO DE FASES (ESCOPO) ---${NC}"
-        ask_boolean "Executar FASE 1: Testes de Servidores (Infra/Sec/Modern)?" "ENABLE_PHASE_SERVER"
-        ask_boolean "Executar FASE 2: Testes de Zona (SOA/AXFR/DNSSEC)?" "ENABLE_PHASE_ZONE"
-        ask_boolean "Executar FASE 3: Testes de Registros (Resolução)?" "ENABLE_PHASE_RECORD"
+        echo -e "\n${BLUE}--- PHASE SELECTION (SCOPE) ---${NC}"
+        ask_boolean "Execute PHASE 1: Server Tests (Infra/Sec/Modern)?" "ENABLE_PHASE_SERVER"
+        ask_boolean "Execute PHASE 2: Zone Tests (SOA/AXFR/DNSSEC)?" "ENABLE_PHASE_ZONE"
+        ask_boolean "Execute PHASE 3: Record Tests (Resolution)?" "ENABLE_PHASE_RECORD"
 
         # --- 3. CONDITIONAL OPTIONS ---
 
         # FASE 1: SERVIDORES
         if [[ "$ENABLE_PHASE_SERVER" == "true" ]]; then
-            echo -e "\n${BLUE}--- OPÇÕES FASE 1 (SERVIDORES) ---${NC}"
-            ask_boolean "Ativar Ping ICMP?" "ENABLE_PING"
+            echo -e "\n${BLUE}--- PHASE 1 OPTIONS (SERVERS) ---${NC}"
+            ask_boolean "Enable Ping ICMP?" "ENABLE_PING"
             if [[ "$ENABLE_PING" == "true" ]]; then
                  ask_variable "   ↳ Ping Count" "PING_COUNT"
                  ask_variable "   ↳ Ping Timeout (s)" "PING_TIMEOUT"
             fi
             
-            ask_boolean "Ativar Traceroute?" "ENABLE_TRACE"
+            ask_boolean "Enable Traceroute?" "ENABLE_TRACE"
             if [[ "$ENABLE_TRACE" == "true" ]]; then
                  ask_variable "   ↳ Max Hops" "TRACE_MAX_HOPS"
             fi
 
-            ask_boolean "Ativar Teste TCP (+tcp)?" "ENABLE_TCP_CHECK"
-            ask_boolean "Ativar Teste DNSSEC (+dnssec validation)?" "ENABLE_DNSSEC_CHECK"
+            ask_boolean "Enable TCP Test (+tcp)?" "ENABLE_TCP_CHECK"
+            ask_boolean "Enable DNSSEC Test (+dnssec validation)?" "ENABLE_DNSSEC_CHECK"
             
-            ask_boolean "Verificar Versão (BIND Privacy)?" "CHECK_BIND_VERSION"
-            ask_boolean "Verificar Recursão Aberta?" "ENABLE_RECURSION_CHECK"
+            ask_boolean "Check Version (BIND Privacy)?" "CHECK_BIND_VERSION"
+            ask_boolean "Check Open Recursion?" "ENABLE_RECURSION_CHECK"
             
             echo -e "${GRAY}   [Modern Standards]${NC}"
-            ask_boolean "   Verificar EDNS0?" "ENABLE_EDNS_CHECK"
-            ask_boolean "   Verificar DNS Cookies?" "ENABLE_COOKIE_CHECK"
-            ask_boolean "   Verificar QNAME Minimization?" "ENABLE_QNAME_CHECK"
-            ask_boolean "   Verificar TLS Connection?" "ENABLE_TLS_CHECK"
-            ask_boolean "   Verificar DoT (DNS over TLS)?" "ENABLE_DOT_CHECK"
-            ask_boolean "   Verificar DoH (DNS over HTTPS)?" "ENABLE_DOH_CHECK"
+            ask_boolean "   Check EDNS0?" "ENABLE_EDNS_CHECK"
+            ask_boolean "   Check DNS Cookies?" "ENABLE_COOKIE_CHECK"
+            ask_boolean "   Check QNAME Minimization?" "ENABLE_QNAME_CHECK"
+            ask_boolean "   Check TLS Connection?" "ENABLE_TLS_CHECK"
+            ask_boolean "   Check DoT (DNS over TLS)?" "ENABLE_DOT_CHECK"
+            ask_boolean "   Check DoH (DNS over HTTPS)?" "ENABLE_DOH_CHECK"
         fi
 
         # FASE 2: ZONAS
         if [[ "$ENABLE_PHASE_ZONE" == "true" ]]; then
-            echo -e "\n${BLUE}--- OPÇÕES FASE 2 (ZONAS) ---${NC}"
-            ask_boolean "Verificar Sincronismo SOA?" "ENABLE_SOA_SERIAL_CHECK"
-            ask_boolean "Verificar Zone Transfer (AXFR)?" "ENABLE_AXFR_CHECK"
+            echo -e "\n${BLUE}--- PHASE 2 OPTIONS (ZONES) ---${NC}"
+            ask_boolean "Check SOA Sync?" "ENABLE_SOA_SERIAL_CHECK"
+            ask_boolean "Check Zone Transfer (AXFR)?" "ENABLE_AXFR_CHECK"
         fi
         
         # FASE 3: REGISTROS
         if [[ "$ENABLE_PHASE_RECORD" == "true" ]]; then
-            echo -e "\n${BLUE}--- OPÇÕES FASE 3 (REGISTROS) ---${NC}"
-            ask_variable "Tentativas por Teste (Consistência)" "CONSISTENCY_CHECKS"
+            echo -e "\n${BLUE}--- PHASE 3 OPTIONS (RECORDS) ---${NC}"
+            ask_variable "Attempts per Test (Consistency)" "CONSISTENCY_CHECKS"
             
-            echo -e "\n${BLUE}--- CRITÉRIOS DE DIVERGÊNCIA (TOLERÂNCIA) ---${NC}"
-            echo -e "${GRAY}(Se 'true', qualquer variação é marcada como divergente)${NC}"
-            ask_boolean "Considerar mudança de IP como divergência?" "STRICT_IP_CHECK"
-            ask_boolean "Considerar mudança de Ordem como divergência?" "STRICT_ORDER_CHECK"
-            ask_boolean "Considerar mudança de TTL como divergência?" "STRICT_TTL_CHECK"
+            echo -e "\n${BLUE}--- DIVERGENCE CRITERIA (TOLERANCE) ---${NC}"
+            echo -e "${GRAY}(If 'true', any variation is marked as divergent)${NC}"
+            ask_boolean "Strict IP Check?" "STRICT_IP_CHECK"
+            ask_boolean "Strict Order Check?" "STRICT_ORDER_CHECK"
+            ask_boolean "Strict TTL Check?" "STRICT_TTL_CHECK"
         fi
         
         # --- 4. ADVANCED & ANALYSIS ---
-        echo -e "\n${BLUE}--- OPÇÕES AVANÇADAS & ANÁLISE ---${NC}"
-        ask_variable "Dig Options (Padrão/Iterativo)" "DEFAULT_DIG_OPTIONS"
-        ask_variable "Dig Options (Recursivo)" "RECURSIVE_DIG_OPTIONS"
+        echo -e "\n${BLUE}--- ADVANCED OPTIONS & ANALYSIS ---${NC}"
+        ask_variable "Dig Options (Standard/Iterative)" "DEFAULT_DIG_OPTIONS"
+        ask_variable "Dig Options (Recursive)" "RECURSIVE_DIG_OPTIONS"
         
-        ask_variable "Limiar de Alerta de Latência Ping (ms)" "LATENCY_WARNING_THRESHOLD"
-        ask_variable "Limiar de Alerta de Latência DNS (ms) [Default: 300]" "DNS_LATENCY_WARNING_THRESHOLD"
-        ask_variable "Limiar Mínimo de Latência DNS (ms) [Default: 3]" "DNS_LATENCY_MIN_THRESHOLD"
-        ask_variable "Limite tolerável de Perda de Pacotes (%)" "PING_PACKET_LOSS_LIMIT"
-        ask_boolean "Habilitar Cores no Terminal?" "COLOR_OUTPUT"
+        ask_variable "Ping Latency Warning Threshold (ms)" "LATENCY_WARNING_THRESHOLD"
+        ask_variable "DNS Latency Warning Threshold (ms) [Default: 300]" "DNS_LATENCY_WARNING_THRESHOLD"
+        ask_variable "DNS Latency Minimum Threshold (ms) [Default: 3]" "DNS_LATENCY_MIN_THRESHOLD"
+        ask_variable "Packet Loss Limit (%)" "PING_PACKET_LOSS_LIMIT"
+        ask_boolean "Enable Terminal Colors?" "COLOR_OUTPUT"
         
-        echo -e "\n${GREEN}Configurações atualizadas!${NC}"
+        echo -e "\n${GREEN}Configuration updated!${NC}"
 
         # --- SAVE CONFIGURATION ---
-        echo -e "\n${BLUE}--- PERSISTÊNCIA ---${NC}"
+        echo -e "\n${BLUE}--- PERSISTENCE ---${NC}"
         SAVE_CONFIG="false"
-        ask_boolean "Deseja salvar estas definições no arquivo '$CONFIG_FILE'?" "SAVE_CONFIG"
+        ask_boolean "Save these settings to '$CONFIG_FILE'?" "SAVE_CONFIG"
         if [[ "$SAVE_CONFIG" == "true" ]]; then
-            echo -e "\n${RED}${BOLD}⚠️  ATENÇÃO: ISSO IRÁ SOBRESCREVER O ARQUIVO $CONFIG_FILE!${NC}"
+            echo -e "\n${RED}${BOLD}⚠️  WARNING: THIS WILL OVERWRITE $CONFIG_FILE!${NC}"
             CONFIRM_SAVE="false"
-            ask_boolean "TEM CERTEZA QUE DESEJA CONTINUAR?" "CONFIRM_SAVE"
+            ask_boolean "ARE YOU SURE YOU WANT TO CONTINUE?" "CONFIRM_SAVE"
             if [[ "$CONFIRM_SAVE" == "true" ]]; then
                 save_config_to_file
             else
-                echo -e "     ${YELLOW}>> Cancelado. As alterações valem apenas para esta execução.${NC}"
+                echo -e "     ${YELLOW}>> Cancelled. Changes apply to this execution only.${NC}"
             fi
         fi
 
@@ -847,11 +1145,11 @@ interactive_configuration() {
 }
 
 save_config_to_file() {
-    [[ ! -f "$CONFIG_FILE" ]] && { echo "Erro: $CONFIG_FILE não encontrado para escrita."; return; }
+    [[ ! -f "$CONFIG_FILE" ]] && { echo "Error: $CONFIG_FILE not found for writing."; return; }
     
     # Backup existing config
     cp "$CONFIG_FILE" "${CONFIG_FILE}.bak"
-    echo -e "     ${GRAY}ℹ️  Backup criado: ${CONFIG_FILE}.bak${NC}"
+    echo -e "     ${GRAY}ℹ️  Backup created: ${CONFIG_FILE}.bak${NC}"
     
     # Helper to update key="val" or key=val in conf file
     # Handles quoted and unquoted values, preserves comments
@@ -933,7 +1231,7 @@ save_config_to_file() {
     update_conf_key "STRICT_ORDER_CHECK" "$STRICT_ORDER_CHECK"
     update_conf_key "STRICT_TTL_CHECK" "$STRICT_TTL_CHECK"
     
-    echo -e "     ${GREEN}✅ Configurações salvas em '$CONFIG_FILE'!${NC}"
+    echo -e "     ${GREEN}✅ Configuration saved to '$CONFIG_FILE'!${NC}"
 }
 
 # ==============================================
@@ -949,13 +1247,13 @@ validate_csv_files() {
     
     # 1. Check Domains File
     if [[ ! -f "$FILE_DOMAINS" ]]; then
-         echo -e "${RED}ERRO: Arquivo de domínios '$FILE_DOMAINS' não encontrado!${NC}"; error_count=$((error_count+1))
+         echo -e "${RED}ERROR: Domains file '$FILE_DOMAINS' not found!${NC}"; error_count=$((error_count+1))
     else
          # Check columns (Expected 5: DOMAIN;GROUPS;TEST;RECORDS;EXTRA)
          local invalid_lines=$(awk -F';' 'NF!=5 && !/^#/ && !/^$/ {print NR}' "$FILE_DOMAINS")
          if [[ -n "$invalid_lines" ]]; then
-             echo -e "${RED}ERRO EM '$FILE_DOMAINS':${NC} Linhas com número incorreto de colunas (Esperado 5):"
-             echo -e "${YELLOW}Linhas: $(echo "$invalid_lines" | tr '\n' ',' | sed 's/,$//')${NC}"
+             echo -e "${RED}ERROR IN '$FILE_DOMAINS':${NC} Lines with incorrect column count (Expected 5):"
+             echo -e "${YELLOW}Lines: $(echo "$invalid_lines" | tr '\n' ',' | sed 's/,$//')${NC}"
              error_count=$((error_count+1))
          fi
 
@@ -963,36 +1261,36 @@ validate_csv_files() {
          # Basic FQDN Regex: alphanumeric, dots, hyphens (Interval {0,61} removed for awk compatibility/replaced with *)
          local invalid_domains=$(awk -F';' '!/^#/ && !/^$/ && $1 !~ /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$/ {print NR " (" $1 ")"}' "$FILE_DOMAINS")
          if [[ -n "$invalid_domains" ]]; then
-             echo -e "${RED}ERRO EM '$FILE_DOMAINS':${NC} Domínios com formato inválido:"
-             echo -e "${YELLOW}Linhas: $(echo "$invalid_domains" | tr '\n' ', ' | sed 's/, $//')${NC}"
+             echo -e "${RED}ERROR IN '$FILE_DOMAINS':${NC} Invalid domain format found:"
+             echo -e "${YELLOW}Lines: $(echo "$invalid_domains" | tr '\n' ', ' | sed 's/, $//')${NC}"
              error_count=$((error_count+1))
          fi
 
          # Validate TEST type (Col 3: iterative|recursive|both)
          local invalid_types=$(grep -vE '^\s*#|^\s*$' "$FILE_DOMAINS" | awk -F';' '$3 !~ /^(iterative|recursive|both)$/ {print NR " (" $3 ")"}')
          if [[ -n "$invalid_types" ]]; then
-             echo -e "${RED}ERRO SEMÂNTICO EM '$FILE_DOMAINS':${NC} Campo TEST inválido (Use: iterative, recursive ou both):"
-             echo -e "${YELLOW}Linhas: $invalid_types${NC}"
+             echo -e "${RED}SEMANTIC ERROR IN '$FILE_DOMAINS':${NC} Invalid TEST field (Use: iterative, recursive or both):"
+             echo -e "${YELLOW}Lines: $invalid_types${NC}"
              error_count=$((error_count+1))
          fi
     fi
 
     # 2. Check Groups File
     if [[ ! -f "$FILE_GROUPS" ]]; then
-         echo -e "${RED}ERRO: Arquivo de grupos '$FILE_GROUPS' não encontrado!${NC}"; error_count=$((error_count+1))
+         echo -e "${RED}ERROR: Groups file '$FILE_GROUPS' not found!${NC}"; error_count=$((error_count+1))
     else
          # Check columns (Expected 5: NAME;DESC;TYPE;TIMEOUT;SERVERS)
          local invalid_lines=$(awk -F';' 'NF!=5 && !/^#/ && !/^$/ {print NR}' "$FILE_GROUPS")
          if [[ -n "$invalid_lines" ]]; then
-             echo -e "${RED}ERRO EM '$FILE_GROUPS':${NC} Linhas com número incorreto de colunas (Esperado 5):"
-             echo -e "${YELLOW}Linhas: $(echo "$invalid_lines" | tr '\n' ',' | sed 's/,$//')${NC}"
+             echo -e "${RED}ERROR IN '$FILE_GROUPS':${NC} Lines with incorrect column count (Expected 5):"
+             echo -e "${YELLOW}Lines: $(echo "$invalid_lines" | tr '\n' ',' | sed 's/,$//')${NC}"
              error_count=$((error_count+1))
          fi
 
          # 2.1 Check for Duplicate Groups
          local duplicates=$(awk -F';' '!/^#/ && !/^$/ {print $1}' "$FILE_GROUPS" | sort | uniq -d)
          if [[ -n "$duplicates" ]]; then
-             echo -e "${RED}ERRO EM '$FILE_GROUPS':${NC}  IDs de Grupo DUPLICADOS encontrados:"
+             echo -e "${RED}ERROR IN '$FILE_GROUPS':${NC} DUPLICATE Group IDs found:"
              echo -e "${YELLOW}$(echo "$duplicates" | tr '\n' ',' | sed 's/,$//')${NC}"
              error_count=$((error_count+1))
          fi
@@ -1026,7 +1324,7 @@ validate_csv_files() {
                  fi
                  
                  # If we reached here, it's invalid
-                 echo -e "${RED}ERRO EM '$FILE_GROUPS' (Linha $ln):${NC} IP/Host Inválido detectado: '$ip'"
+                 echo -e "${RED}ERROR IN '$FILE_GROUPS' (Line $ln):${NC} Invalid IP/Host detected: '$ip'"
                  error_count=$((error_count+1))
                  # (IPv6 detection is loose here [contains :], but better than nothing for now)
              done
@@ -1035,8 +1333,8 @@ validate_csv_files() {
          # Validate TYPE (Col 3: authoritative|recursive|mixed)
          local invalid_types=$(grep -vE '^\s*#|^\s*$' "$FILE_GROUPS" | awk -F';' '$3 !~ /^(authoritative|recursive|mixed)$/ {print NR " (" $3 ")"}')
          if [[ -n "$invalid_types" ]]; then
-             echo -e "${RED}ERRO SEMÂNTICO EM '$FILE_GROUPS':${NC} Campo TYPE inválido (Use: authoritative, recursive ou mixed):"
-             echo -e "${YELLOW}Linhas: $invalid_types${NC}"
+             echo -e "${RED}SEMANTIC ERROR IN '$FILE_GROUPS':${NC} Invalid TYPE field (Use: authoritative, recursive or mixed):"
+             echo -e "${YELLOW}Lines: $invalid_types${NC}"
              error_count=$((error_count+1))
          fi
     fi
@@ -1197,7 +1495,7 @@ prepare_chart_resources() {
     
     local chart_url="https://cdn.jsdelivr.net/npm/chart.js"
     
-    echo -ne "  ⏳ Baixando biblioteca gráfica (Chart.js)... "
+    echo -ne "  ⏳ Downloading chart library (Chart.js)... "
     
     if command -v curl &>/dev/null; then
          local cmd="curl -s -f -o \"$TEMP_CHART_JS\" \"$chart_url\""
@@ -1220,8 +1518,8 @@ prepare_chart_resources() {
          fi
     fi
     
-    echo -e "${YELLOW}FALHA${NC}"
-    echo -e "${YELLOW}⚠️  Aviso: Não foi possível baixar Chart.js (Arquivo inválido ou erro de rede). Gráficos desabilitados.${NC}"
+    echo -e "${YELLOW}FAILED${NC}"
+    echo -e "${YELLOW}⚠️  Warning: Could not download Chart.js (Invalid file or network error). Charts disabled.${NC}"
     ENABLE_CHARTS="false"
     rm -f "$TEMP_CHART_JS"
     return 1
@@ -1640,8 +1938,8 @@ cat > "$TEMP_HEADER" << EOF
                 $PRODUCT_SLOGAN
             </p>
             <div style="text-align: right; color: var(--text-secondary); font-size: 0.9rem;">
-                <div>Executado em: <strong>$TIMESTAMP</strong></div>
-                <div style="font-size: 0.8em; margin-top:4px;">Tempo Total: <span id="total_time_placeholder">...</span></div>
+                <div>${L_LBL_EXECITON}: <strong>$TIMESTAMP</strong></div>
+                <div style="font-size: 0.8em; margin-top:4px;">${L_LBL_DURATION}: <span id="total_time_placeholder">...</span></div>
             </div>
         </header>
 EOF
@@ -1651,8 +1949,8 @@ EOF
         <div style="background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--text-primary); padding: 12px; border-radius: 8px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem;">
             <span style="font-size: 1.2rem;">ℹ️</span>
             <div>
-                <strong>Modo Simplificado Ativo:</strong> 
-                Este relatório foi gerado em modo compacto. Logs técnicos detalhados (outputs de dig, traceroute e ping) foram suprimidos para reduzir o tamanho do arquivo.
+                <strong>${L_MSG_SIMPLE_MODE_TITLE}:</strong> 
+                ${L_MSG_SIMPLE_MODE_BODY}
             </div>
         </div>
 EOF
@@ -1719,49 +2017,49 @@ generate_executive_summary() {
 cat > "$TEMP_STATS" << EOF
         <div style="margin-top:20px;"></div>
         
-        <!-- EXECUTIVE HERO SECTION -->
-        <div style="display:grid; grid-template-columns: 250px 1fr; gap:20px; margin-bottom:30px;">
-             <!-- GRADE CARD -->
-             <div class="card" style="--card-accent: ${grade_color}; background: linear-gradient(145deg, var(--bg-card) 0%, rgba(255,255,255,0.03) 100%);">
-                 <div style="font-size:0.9rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">Diagnóstico Geral</div>
-                 <div style="font-size:5rem; font-weight:800; line-height:1; color:${grade_color}; text-shadow: 0 4px 20px rgba(0,0,0,0.3);">${grade}</div>
-                 <div style="font-size:1.2rem; font-weight:600; color:#fff; margin-top:5px; padding: 4px 12px; border-radius:12px; background:rgba(255,255,255,0.1);">${grade_text}</div>
-             </div>
-             
-             <!-- KPI GRID -->
-             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
-                 <div class="card" style="--card-accent: #3b82f6;">
-                     <span class="card-num">${server_count}</span>
-                     <span class="card-label">Servidores Ativos</span>
-                     <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">Infraestrutura Identificada</span>
-                 </div>
-                 <div class="card" style="--card-accent: ${avg_lat_suffix:+"#eab308"};">
-                     <span class="card-num">${avg_lat}${suffix_lat}</span>
-                     <span class="card-label">Latência Média</span>
-                     <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">Performance Global</span>
-                 </div>
-                  <div class="card" style="--card-accent: ${security_issues:+"var(--accent-danger)"};">
-                     <div style="display:flex; align-items:baseline; gap:5px;">
-                         <span class="card-num" style="color:${security_issues:+"var(--accent-danger)"};">${security_issues}</span>
-                     </div>
-                     <span class="card-label">Riscos de Segurança</span>
-                     <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">Versão, AXFR, Recursão</span>
-                 </div>
-                 
-                 <div class="card" style="--card-accent: #10b981;">
-                     <span class="card-num">${domain_count}</span>
-                     <span class="card-label">Domínios</span>
-                 </div>
-                  <div class="card" style="--card-accent: #8b5cf6;">
-                     <span class="card-num">${CNT_TESTS_ZONE:-0}</span>
-                     <span class="card-label">Zonas Testadas</span>
-                 </div>
-                  <div class="card" style="--card-accent: #ec4899;">
-                     <span class="card-num">${CNT_TESTS_REC:-0}</span>
-                     <span class="card-label">Registros Testados</span>
-                 </div>
-             </div>
-        </div>
+         <!-- HERO SECTION -->
+         <div style="display:grid; grid-template-columns: 250px 1fr; gap:20px; margin-bottom:30px;">
+              <!-- GRADE CARD -->
+              <div class="card" style="--card-accent: ${grade_color}; background: linear-gradient(145deg, var(--bg-card) 0%, rgba(255,255,255,0.03) 100%);">
+                  <div style="font-size:0.9rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px;">${L_CRD_DIAG}</div>
+                  <div style="font-size:5rem; font-weight:800; line-height:1; color:${grade_color}; text-shadow: 0 4px 20px rgba(0,0,0,0.3);">${grade}</div>
+                  <div style="font-size:1.2rem; font-weight:600; color:#fff; margin-top:5px; padding: 4px 12px; border-radius:12px; background:rgba(255,255,255,0.1);">${grade_text}</div>
+              </div>
+              
+              <!-- KPI GRID -->
+              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px;">
+                  <div class="card" style="--card-accent: #3b82f6;">
+                      <span class="card-num">${server_count}</span>
+                      <span class="card-label">${L_LBL_ACTIVE_SRV}</span>
+                      <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">${L_LBL_INFRA_ID}</span>
+                  </div>
+                  <div class="card" style="--card-accent: ${avg_lat_suffix:+"#eab308"};">
+                      <span class="card-num">${avg_lat}${suffix_lat}</span>
+                      <span class="card-label">${L_LBL_AVG_LAT}</span>
+                      <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">${L_LBL_PERF_GLOB}</span>
+                  </div>
+                   <div class="card" style="--card-accent: ${security_issues:+"var(--accent-danger)"};">
+                      <div style="display:flex; align-items:baseline; gap:5px;">
+                          <span class="card-num" style="color:${security_issues:+"var(--accent-danger)"};">${security_issues}</span>
+                      </div>
+                      <span class="card-label">${L_LBL_SEC_RISKS}</span>
+                      <span style="font-size:0.75rem; color:var(--text-secondary); margin-top:5px;">${L_LBL_RISK_DESC}</span>
+                  </div>
+                  
+                  <div class="card" style="--card-accent: #10b981;">
+                      <span class="card-num">${domain_count}</span>
+                      <span class="card-label">${L_LBL_DOMAINS}</span>
+                  </div>
+                   <div class="card" style="--card-accent: #8b5cf6;">
+                      <span class="card-num">${CNT_TESTS_ZONE:-0}</span>
+                      <span class="card-label">${L_LBL_ZONES_TESTED}</span>
+                  </div>
+                   <div class="card" style="--card-accent: #ec4899;">
+                      <span class="card-num">${CNT_TESTS_REC:-0}</span>
+                      <span class="card-label">${L_LBL_RECS_TESTED}</span>
+                  </div>
+              </div>
+         </div>
 EOF
 
     if [[ "$ENABLE_CHARTS" == "true" ]]; then
@@ -1769,14 +2067,14 @@ EOF
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; margin-bottom: 40px;">
              <!-- Overview Chart Container -->
              <div class="card" style="min-height: 350px; --card-accent: var(--accent-primary); padding:20px;">
-                 <h3 style="margin-top:0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; border:none; padding:0;">Visão Geral de Execução</h3>
+                 <h3 style="margin-top:0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; border:none; padding:0;">${L_CHART_OVERVIEW}</h3>
                  <div style="position: relative; height: 300px; width: 100%; margin-top:15px;">
                     <canvas id="chartOverview"></canvas>
                  </div>
              </div>
              <!-- Latency Chart Container -->
              <div class="card" style="min-height: 350px; --card-accent: var(--accent-warning); padding:20px;">
-                 <h3 style="margin-top:0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; border:none; padding:0;">Top Latência (Médias)</h3>
+                 <h3 style="margin-top:0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em; border:none; padding:0;">${L_CHART_LATENCY}</h3>
                  <div style="position: relative; height: 300px; width: 100%; margin-top:15px;">
                     <canvas id="chartLatency"></canvas>
                  </div>
@@ -1789,15 +2087,15 @@ EOF
 generate_health_map() {
     cat > "$TEMP_HEALTH_MAP" << EOF
     <div style="margin-top: 40px; margin-bottom: 40px;">
-        <h2>🗺️ Mapa de Saúde DNS</h2>
+        <h2>🗺️ ${L_MAP_TITLE}</h2>
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
-                        <th>Grupo DNS</th>
-                        <th>Latência Média</th>
-                        <th>Falhas / Total</th>
-                        <th>Status Geral</th>
+                        <th>${L_TH_GRP}</th>
+                        <th>${L_TH_LAT}</th>
+                        <th>${L_TH_FAIL_TOTAL}</th>
+                        <th>${L_TH_STATUS}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -2904,12 +3202,12 @@ generate_html_report_v2() {
         
         server_rows+="<details open style='margin-bottom:15px; border:1px solid #334155; border-radius:8px; overflow:hidden;'>
             <summary style='background:#1e293b; padding:12px 15px; cursor:pointer; font-weight:600; color:#fff; display:flex; justify-content:space-between;'>
-                <span>📂 $grp <span style='font-size:0.8em; opacity:0.6; font-weight:400;'>($g_total servers)</span></span>
-                <span style='font-size:0.8em; color:#94a3b8;'>Avg Lat: ${g_avg_lat}ms</span>
+                <span>📂 $grp <span style='font-size:0.8em; opacity:0.6; font-weight:400;'>($g_total ${L_TH_SRV:-servers})</span></span>
+                <span style='font-size:0.8em; color:#94a3b8;'>${L_LBL_AVG_LAT:-Avg Lat}: ${g_avg_lat}ms</span>
             </summary>
             <table style='width:100%; border-collapse:collapse;'>
             <thead style='background:#0f172a;'>
-               <tr><th style='width:35%'>Servidor</th><th style='width:25%'>Latência</th><th>Config & Features</th></tr>
+               <tr><th style='width:35%'>${L_TH_SRV}</th><th style='width:25%'>${L_TH_LAT}</th><th>${L_Row_Config:-Config} & ${L_Row_Feat:-Features}</th></tr>
             </thead>
             <tbody>"
             
@@ -3092,7 +3390,7 @@ generate_html_report_v2() {
              zone_rows+="<details open style='margin-bottom:15px; border:1px solid #334155; border-radius:8px; overflow:hidden;'>
                 <summary style='background:#1e293b; padding:12px 15px; cursor:pointer; font-weight:600; color:#fff;'>🌍 $domain <span style='font-size:0.8em; color:${soa_color}; font-weight:600; margin-left:10px;'>Consensus SOA: $most_frequent_soa</span></summary>
                 <table style='width:100%'>
-                <thead style='background:#0f172a'><tr><th>Grupo</th><th>Servidor</th><th>SOA Serial</th><th>AXFR Policy</th><th>DNSSEC Sig</th><th>Tempo de Resposta</th></tr></thead>
+                <thead style='background:#0f172a'><tr><th>${L_TH_GRP}</th><th>${L_TH_SRV}</th><th>${L_TH_SOA}</th><th>${L_TH_AXFR}</th><th>${L_TH_SIG}</th><th>${L_TH_RESP}</th></tr></thead>
                 <tbody>"
 
              for grp in "${grp_list[@]}"; do
@@ -3170,7 +3468,7 @@ generate_html_report_v2() {
                  
                  cur_type="$r_type"
                  # Open Type (Wrapped in Div for Indent)
-                 record_rows+="<div style='padding:5px 15px;'><details style='margin-bottom:5px; border:1px solid #475569; border-radius:6px;' open><summary style='background:#334155; padding:5px 10px; cursor:pointer; font-size:0.9em; font-weight:600;'>Tipo: <span style='color:#facc15'>$cur_type</span></summary><div class='table-responsive'><table style='width:100%; font-size:0.9em; border-collapse: collapse;'><thead><tr style='background:#0f172a; color:#94a3b8; text-align:left;'><th style='padding:8px;'>Server</th><th style='padding:8px;'>Status</th><th style='padding:8px;'>Resposta</th><th style='padding:8px;'>Tempo de Resposta</th></tr></thead><tbody>"
+                 record_rows+="<div style='padding:5px 15px;'><details style='margin-bottom:5px; border:1px solid #475569; border-radius:6px;' open><summary style='background:#334155; padding:5px 10px; cursor:pointer; font-size:0.9em; font-weight:600;'>${L_TH_TYPE}: <span style='color:#facc15'>$cur_type</span></summary><div class='table-responsive'><table style='width:100%; font-size:0.9em; border-collapse: collapse;'><thead><tr style='background:#0f172a; color:#94a3b8; text-align:left;'><th style='padding:8px;'>${L_TH_SRV}</th><th style='padding:8px;'>${L_TH_STATUS}</th><th style='padding:8px;'>${L_Row_Res}</th><th style='padding:8px;'>${L_TH_RESP}</th></tr></thead><tbody>"
              fi
 
              local r_status="${STATS_RECORD_RES[$key]}"; local r_ans="${STATS_RECORD_ANSWER[$key]}"; local r_lat="${STATS_RECORD_LATENCY[$key]}"
@@ -3472,15 +3770,15 @@ generate_html_report_v2() {
         <div class="toggle-btn" onclick="toggleSidebar()">‹</div>
         <div class="logo"><span style="color:var(--accent)">Friendly</span><span class="logo-text">DNSReporter <span style="font-size:0.5em; opacity:0.5; margin-left:5px">v${SCRIPT_VERSION}</span></span></div>
         <nav>
-            <div class="nav-item active" onclick="openTab('tab-dashboard')" title="Dashboard"><span>📊</span><span class="nav-text">Dashboard</span></div>
-            <div class="nav-item" onclick="openTab('tab-servers')" title="Servidores & Infra"><span>🖥️</span><span class="nav-text">Servidores</span></div>
-            <div class="nav-item" onclick="openTab('tab-zones')" title="Detalhes de Zonas & SOA"><span>🌍</span><span class="nav-text">Zonas</span></div>
-            <div class="nav-item" onclick="openTab('tab-records')" title="Validação de Registros"><span>📝</span><span class="nav-text">Registros</span></div>
-            <div class="nav-item" onclick="openTab('tab-config')" title="Configuração & Ambiente"><span>⚙️</span><span class="nav-text">Bastidores</span></div>
-            <div class="nav-item" onclick="openTab('tab-help')" title="Glossário & Ajuda"><span>❓</span><span class="nav-text">Ajuda</span></div>
+            <div class="nav-item active" onclick="openTab('tab-dashboard')" title="${L_TAB_DASH}"><span>📊</span><span class="nav-text">${L_TAB_DASH}</span></div>
+            <div class="nav-item" onclick="openTab('tab-servers')" title="${L_TAB_SRV}"><span>🖥️</span><span class="nav-text">${L_TAB_SRV}</span></div>
+            <div class="nav-item" onclick="openTab('tab-zones')" title="${L_TAB_ZONE}"><span>🌍</span><span class="nav-text">${L_TAB_ZONE}</span></div>
+            <div class="nav-item" onclick="openTab('tab-records')" title="${L_TAB_REC}"><span>📝</span><span class="nav-text">${L_TAB_REC}</span></div>
+            <div class="nav-item" onclick="openTab('tab-config')" title="${L_TAB_BACK}"><span>⚙️</span><span class="nav-text">${L_TAB_BACK}</span></div>
+            <div class="nav-item" onclick="openTab('tab-help')" title="${L_TAB_HELP}"><span>❓</span><span class="nav-text">${L_TAB_HELP}</span></div>
 EOF
     if [[ "$ENABLE_LOG_TEXT" == "true" ]]; then
-       echo '            <div class="nav-item" onclick="openTab('\''tab-logs'\'')" title="Logs Completos"><span>📜</span><span class="nav-text">Logs Verbos</span></div>' >> "$target_file"
+       echo '            <div class="nav-item" onclick="openTab('\''tab-logs'\'')" title="'"${L_TAB_LOGS}"'"><span>📜</span><span class="nav-text">'"${L_TAB_LOGS}"'</span></div>' >> "$target_file"
     fi
     cat >> "$target_file" << EOF
         </nav>
@@ -3498,37 +3796,37 @@ EOF
 
             <!-- NEW METRICS GRID -->
             <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-                 <!-- 1. NETWORK -->
-                 <div class="card" style="border-top: 3px solid ${color_net}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('network_details', 'Detalhes de Saúde da Rede')">
-                     <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">📡 Rede</div>
-                     <div style="font-size:2.5rem; font-weight:800; color:${color_net}; margin:10px 0;">${score_network}</div>
-                     <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">Infra & Conectividade ℹ️</div>
-                     <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">Mede a <strong>Saúde Média</strong> dos servidores (Ping, Portas, Latência). Clique para detalhes.</div>
-                 </div>
-                 
-                 <!-- 2. STABILITY -->
-                 <div class="card" style="border-top: 3px solid ${color_stab}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('stability_details', 'Detalhes de Estabilidade')">
-                     <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">⚙️ Estabilidade</div>
-                     <div style="font-size:2.5rem; font-weight:800; color:${color_stab}; margin:10px 0;">${score_stability}</div>
-                     <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">Consistência & DNS ℹ️</div>
-                     <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">Reflete a <strong>Taxa de Sucesso Global</strong> das consultas e consistência. Clique para ver falhas.</div>
-                 </div>
-                 
-                 <!-- 3. SECURITY -->
-                 <div class="card" style="border-top: 3px solid ${color_sec}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('security_details', 'Detalhes de Segurança')">
-                     <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">🛡️ Segurança</div>
-                     <div style="font-size:2.5rem; font-weight:800; color:${color_sec}; margin:10px 0;">${score_security}</div>
-                     <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">Riscos & Hardening ℹ️</div>
-                     <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">Mede a <strong>Conformidade Média</strong> (AXFR, Versão, Recursão). Clique para detalhes.</div>
-                 </div>
-                 
-                 <!-- 4. MODERNITY -->
-                 <div class="card" style="border-top: 3px solid ${color_mod}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('modernity_details', 'Detalhes de Capacidades')">
-                     <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">🚀 Capacidades</div>
-                     <div style="font-size:2.5rem; font-weight:800; color:${color_mod}; margin:10px 0;">${score_modernity}</div>
-                     <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">Features Modernas ℹ️</div>
-                     <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">Mede a <strong>Adoção Média</strong> de recursos (EDNS, TCP, DNSSEC). Clique para ver pontuação.</div>
-                 </div>
+                  <!-- 1. NETWORK -->
+                  <div class="card" style="border-top: 3px solid ${color_net}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('network_details', '${L_CRD_NET}')">
+                      <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">📡 ${L_CRD_NET}</div>
+                      <div style="font-size:2.5rem; font-weight:800; color:${color_net}; margin:10px 0;">${score_network}</div>
+                      <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">${L_DESC_NET} ℹ️</div>
+                      <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">${L_DESC_NET_LONG}</div>
+                  </div>
+                  
+                  <!-- 2. STABILITY -->
+                  <div class="card" style="border-top: 3px solid ${color_stab}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('stability_details', '${L_CRD_STAB}')">
+                      <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">⚙️ ${L_CRD_STAB}</div>
+                      <div style="font-size:2.5rem; font-weight:800; color:${color_stab}; margin:10px 0;">${score_stability}</div>
+                      <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">${L_DESC_STAB} ℹ️</div>
+                      <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">${L_DESC_STAB_LONG}</div>
+                  </div>
+                  
+                  <!-- 3. SECURITY -->
+                  <div class="card" style="border-top: 3px solid ${color_sec}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('security_details', '${L_CRD_SEC}')">
+                      <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">🛡️ ${L_CRD_SEC}</div>
+                      <div style="font-size:2.5rem; font-weight:800; color:${color_sec}; margin:10px 0;">${score_security}</div>
+                      <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">${L_DESC_SEC} ℹ️</div>
+                      <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">${L_DESC_SEC_LONG}</div>
+                  </div>
+                  
+                  <!-- 4. MODERNITY -->
+                  <div class="card" style="border-top: 3px solid ${color_mod}; display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; cursor:pointer;" onclick="showModal('modernity_details', '${L_CRD_MOD}')">
+                      <div style="font-size:0.9rem; color:#94a3b8; font-weight:600; text-transform:uppercase;">🚀 ${L_CRD_MOD}</div>
+                      <div style="font-size:2.5rem; font-weight:800; color:${color_mod}; margin:10px 0;">${score_modernity}</div>
+                      <div style="font-size:0.85rem; color:#fff; background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:4px; display:inline-block; width:fit-content;">${L_DESC_MOD} ℹ️</div>
+                      <div style="font-size:0.8rem; color:#cbd5e1; margin-top:10px; line-height:1.4;">${L_DESC_MOD_LONG}</div>
+                  </div>
             </div>
 
 
@@ -3536,8 +3834,8 @@ EOF
             <!-- HIDDEN LOGS FOR MODALS -->
             <div id="log_network_details" style="display:none">
                 <div style="font-size:0.9rem; color:#cbd5e1;">
-                    <h3 style="color:#fff; margin-bottom:10px;">Relatório de Saúde (Rede)</h3>
-                    <p>A pontuação atual <strong>${score_network}/100</strong> representa a <strong>Saúde Média da Infraestrutura</strong>. Cada servidor é avaliado individualmente (100 pts) e perde pontos por falhas. A nota final é a média global.</p>
+                    <h3 style="color:#fff; margin-bottom:10px;">${L_CRD_NET}</h3>
+                    <p>${L_DESC_NET_BODY}</p>
                     <ul style="margin-left:20px; margin-top:10px; list-style-type: disc;">
                         $network_details_log
                     </ul>
@@ -3546,8 +3844,8 @@ EOF
             
             <div id="log_stability_details" style="display:none">
                 <div style="font-size:0.9rem; color:#cbd5e1;">
-                    <h3 style="color:#fff; margin-bottom:10px;">Relatório de Estabilidade</h3>
-                    <p>A pontuação atual <strong>${score_stability}/100</strong> representa o <strong>Índice de Sucesso Global</strong>. É calculada pela porcentagem de consultas bem-sucedidas (OK/NXDOMAIN) em relação ao total executado.</p>
+                    <h3 style="color:#fff; margin-bottom:10px;">${L_CRD_STAB}</h3>
+                    <p>${L_DESC_STAB_BODY}</p>
                     <ul style="margin-left:20px; margin-top:10px; list-style-type: disc;">
                         $stability_details_log
                     </ul>
@@ -3556,8 +3854,8 @@ EOF
             
             <div id="log_security_details" style="display:none">
                 <div style="font-size:0.9rem; color:#cbd5e1;">
-                    <h3 style="color:#fff; margin-bottom:10px;">Relatório de Segurança</h3>
-                    <p>A pontuação atual <strong>${score_security}/100</strong> representa a <strong>Taxa de Conformidade Média</strong>. Cada servidor pontua por boas práticas: Recursão Fechada (+40), AXFR Negado (+40) e Versão Oculta (+20).</p>
+                    <h3 style="color:#fff; margin-bottom:10px;">${L_CRD_SEC}</h3>
+                    <p>${L_DESC_SEC_BODY}</p>
                     <ul style="margin-left:20px; margin-top:10px; list-style-type: disc;">
                         $security_details_log
                     </ul>
@@ -3566,8 +3864,8 @@ EOF
             
             <div id="log_modernity_details" style="display:none">
                 <div style="font-size:0.9rem; color:#cbd5e1;">
-                    <h3 style="color:#fff; margin-bottom:10px;">Relatório de Capacidades Modernas</h3>
-                    <p>A pontuação atual <strong>${score_modernity}/100</strong> representa a <strong>Taxa de Adoção de Features</strong>. Cada servidor pontua por suportar recursos modernos: EDNS (+25), TCP (+25), DNSSEC (+25) e Criptografia (+25).</p>
+                    <h3 style="color:#fff; margin-bottom:10px;">${L_CRD_MOD}</h3>
+                    <p>${L_DESC_MOD_BODY}</p>
                     <ul style="margin-left:20px; margin-top:10px; list-style-type: disc;">
                         $modernity_details_log
                     </ul>
@@ -3578,43 +3876,43 @@ EOF
             <div class="dashboard-grid">
                 <!-- GERAL -->
                 <div class="card" onclick="openTab('tab-config')" style="border-top: 3px solid #3b82f6; cursor:pointer;">
-                    <div class="card-header">GERAL</div>
-                    <div class="stat-row"><span class="stat-label">⏱️ Duração</span> <span class="stat-val">${TOTAL_DURATION}s</span></div>
-                    <div class="stat-row"><span class="stat-label">🧪 Execuções</span> <span class="stat-val">${total_exec}</span></div>
+                    <div class="card-header">${L_LBL_GENERAL}</div>
+                    <div class="stat-row"><span class="stat-label">⏱️ ${L_LBL_DURATION}</span> <span class="stat-val">${TOTAL_DURATION}s</span></div>
+                    <div class="stat-row"><span class="stat-label">🧪 ${L_LBL_EXECITON}</span> <span class="stat-val">${total_exec}</span></div>
                     <div class="stat-row" style="margin-left:10px; font-size:0.8em; color:#94a3b8"><span class="stat-label">Srv / Zone / Rec</span> <span>${CNT_TESTS_SRV} / ${CNT_TESTS_ZONE} / ${CNT_TESTS_REC}</span></div>
-                    <div class="stat-row"><span class="stat-label">🔢 Escopo</span> <span class="stat-val">${srv_count} Srv | ${zone_count} Zones | ${rec_count} Rec</span></div>
+                    <div class="stat-row"><span class="stat-label">🔢 ${L_LBL_SCOPE}</span> <span class="stat-val">${srv_count} Srv | ${zone_count} Zones | ${rec_count} Rec</span></div>
                 </div>
 
                 <!-- SERVIDORES -->
                 <div class="card" onclick="openTab('tab-servers')" style="border-top: 3px solid #f59e0b; cursor:pointer;">
-                    <div class="card-header">SERVIDORES</div>
-                    <div class="stat-row"><span class="stat-label">📡 Conectividade</span> <span class="stat-val"><span class="text-ok">${CNT_PING_OK:-0} OK</span> / <span class="text-fail">${CNT_PING_FAIL:-0} Fail</span></span></div>
-                    <div class="stat-row"><span class="stat-label">🌉 Portas (53/853)</span> <span class="stat-val">53[<span class="text-ok">${TCP_SUCCESS:-0}</span>/<span class="text-fail">${TCP_FAIL:-0}</span>] | 853[<span class="text-ok">${DOT_SUCCESS:-0}</span>/<span class="text-fail">${DOT_FAIL:-0}</span>]</span></div>
-                    <div class="stat-row"><span class="stat-label">⚙️ Config (Ver/Rec)</span> <span class="stat-val">Ver[<span class="text-ok">${SEC_HIDDEN:-0}</span>/<span class="text-fail">${SEC_REVEALED:-0}</span>] | Rec[<span class="text-ok">${SEC_REC_OK:-0}</span>/<span class="text-fail">${SEC_REC_RISK:-0}</span>]</span></div>
-                    <div class="stat-row"><span class="stat-label">🔧 Recursos</span> <span class="stat-val">EDNS[<span class="text-ok">${EDNS_SUCCESS:-0}</span>] | Cookie[<span class="text-ok">${COOKIE_SUCCESS:-0}</span>]</span></div>
-                    <div class="stat-row"><span class="stat-label">🛡️ Segurança</span> <span class="stat-val">DNSSEC[<span class="text-ok">${DNSSEC_SUCCESS:-0}</span>/<span class="text-fail">${DNSSEC_FAIL:-0}</span>] TLS[<span class="text-ok">${TLS_SUCCESS:-0}</span>]</span></div>
+                    <div class="card-header">${L_LBL_SERVERS}</div>
+                    <div class="stat-row"><span class="stat-label">📡 ${L_Row_Conn}</span> <span class="stat-val"><span class="text-ok">${CNT_PING_OK:-0} OK</span> / <span class="text-fail">${CNT_PING_FAIL:-0} Fail</span></span></div>
+                    <div class="stat-row"><span class="stat-label">🌉 ${L_Row_Ports}</span> <span class="stat-val">53[<span class="text-ok">${TCP_SUCCESS:-0}</span>/<span class="text-fail">${TCP_FAIL:-0}</span>] | 853[<span class="text-ok">${DOT_SUCCESS:-0}</span>/<span class="text-fail">${DOT_FAIL:-0}</span>]</span></div>
+                    <div class="stat-row"><span class="stat-label">⚙️ ${L_Row_Config}</span> <span class="stat-val">Ver[<span class="text-ok">${SEC_HIDDEN:-0}</span>/<span class="text-fail">${SEC_REVEALED:-0}</span>] | Rec[<span class="text-ok">${SEC_REC_OK:-0}</span>/<span class="text-fail">${SEC_REC_RISK:-0}</span>]</span></div>
+                    <div class="stat-row"><span class="stat-label">🔧 ${L_Row_Feat}</span> <span class="stat-val">EDNS[<span class="text-ok">${EDNS_SUCCESS:-0}</span>] | Cookie[<span class="text-ok">${COOKIE_SUCCESS:-0}</span>]</span></div>
+                    <div class="stat-row"><span class="stat-label">🛡️ ${L_Row_Sec}</span> <span class="stat-val">DNSSEC[<span class="text-ok">${DNSSEC_SUCCESS:-0}</span>/<span class="text-fail">${DNSSEC_FAIL:-0}</span>] TLS[<span class="text-ok">${TLS_SUCCESS:-0}</span>]</span></div>
                 </div>
 
                 <!-- ZONAS -->
                 <div class="card" onclick="openTab('tab-zones')" style="border-top: 3px solid #10b981; cursor:pointer;">
-                     <div class="card-header">ZONAS</div>
-                     <div class="stat-row"><span class="stat-label">🔄 SOA Sync</span> <span class="stat-val"><span class="text-ok">${CNT_ZONES_OK:-0} OK</span> / <span class="text-fail">${CNT_ZONES_DIV:-0} DIV</span></span></div>
-                     <div class="stat-row"><span class="stat-label">🌍 AXFR</span> <span class="stat-val"><span class="text-ok">${SEC_AXFR_OK:-0} Block</span> / <span class="text-fail">${SEC_AXFR_RISK:-0} Open</span></span></div>
-                     <div class="stat-row"><span class="stat-label">🔐 Assinaturas</span> <span class="stat-val"><span class="text-ok">${ZONE_SEC_SIGNED:-0} Signed</span> / <span class="text-fail">${ZONE_SEC_UNSIGNED:-0} Unsigned</span></span></div>
+                     <div class="card-header">${L_LBL_ZONES}</div>
+                     <div class="stat-row"><span class="stat-label">🔄 ${L_Row_SOA}</span> <span class="stat-val"><span class="text-ok">${CNT_ZONES_OK:-0} OK</span> / <span class="text-fail">${CNT_ZONES_DIV:-0} DIV</span></span></div>
+                     <div class="stat-row"><span class="stat-label">🌍 ${L_Row_AXFR}</span> <span class="stat-val"><span class="text-ok">${SEC_AXFR_OK:-0} Block</span> / <span class="text-fail">${SEC_AXFR_RISK:-0} Open</span></span></div>
+                     <div class="stat-row"><span class="stat-label">🔐 ${L_Row_Sig}</span> <span class="stat-val"><span class="text-ok">${ZONE_SEC_SIGNED:-0} Signed</span> / <span class="text-fail">${ZONE_SEC_UNSIGNED:-0} Unsigned</span></span></div>
                 </div>
 
                  <!-- REGISTROS -->
                 <div class="card" onclick="openTab('tab-records')" style="border-top: 3px solid #a855f7; cursor:pointer;">
-                     <div class="card-header">REGISTROS</div>
-                     <div class="stat-row"><span class="stat-label">✅ Sucessos</span> <span class="stat-val"><span class="text-ok">${CNT_REC_FULL_OK:-0} OK</span> / <span class="text-warn">${CNT_REC_PARTIAL:-0} Partial</span></span></div>
-                     <div class="stat-row"><span class="stat-label">🚫 Resultados</span> <span class="stat-val"><span class="text-fail">${CNT_REC_FAIL:-0} Fail</span> / <span class="text-warn">${CNT_REC_NXDOMAIN:-0} NX</span></span></div>
-                     <div class="stat-row"><span class="stat-label">⚠️ Consistência</span> <span class="stat-val"><span class="text-ok">${CNT_REC_CONSISTENT:-0} Sync</span> / <span class="text-fail">${CNT_REC_DIVERGENT:-0} Div</span></span></div>
+                     <div class="card-header">${L_LBL_RECORDS}</div>
+                     <div class="stat-row"><span class="stat-label">✅ ${L_Row_Succ}</span> <span class="stat-val"><span class="text-ok">${CNT_REC_FULL_OK:-0} OK</span> / <span class="text-warn">${CNT_REC_PARTIAL:-0} Partial</span></span></div>
+                     <div class="stat-row"><span class="stat-label">🚫 ${L_Row_Res}</span> <span class="stat-val"><span class="text-fail">${CNT_REC_FAIL:-0} Fail</span> / <span class="text-warn">${CNT_REC_NXDOMAIN:-0} NX</span></span></div>
+                     <div class="stat-row"><span class="stat-label">⚠️ ${L_Row_Cons}</span> <span class="stat-val"><span class="text-ok">${CNT_REC_CONSISTENT:-0} Sync</span> / <span class="text-fail">${CNT_REC_DIVERGENT:-0} Div</span></span></div>
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
-                <div class="card"><div class="card-header" style="color:#aaa; border:none; margin:0; padding:0; padding-bottom:10px;">Top Latência</div><div style="height: 250px;"><canvas id="chartLat"></canvas></div></div>
-                <div class="card"><div class="card-header" style="color:#aaa; border:none; margin:0; padding:0; padding-bottom:10px;">Status Global</div><div style="height: 250px;"><canvas id="chartStat"></canvas></div></div>
+                <div class="card"><div class="card-header" style="color:#aaa; border:none; margin:0; padding:0; padding-bottom:10px;">${L_CHART_LATENCY}</div><div style="height: 250px;"><canvas id="chartLat"></canvas></div></div>
+                <div class="card"><div class="card-header" style="color:#aaa; border:none; margin:0; padding:0; padding-bottom:10px;">${L_TH_STATUS}</div><div style="height: 250px;"><canvas id="chartStat"></canvas></div></div>
             </div>
              <script>
                 const ctxLat = document.getElementById('chartLat');
@@ -3626,56 +3924,48 @@ EOF
 
             <!-- DISCLAIMER -->
             <details style="margin-top:20px; background:rgba(0,0,0,0.2); border:1px solid #334155; border-radius:8px; font-size:0.85rem;">
-                <summary style="padding:10px; cursor:pointer; color:#fbbf24; font-weight:600;">⚠️ AVISO DE ISENÇÃO DE RESPONSABILIDADE (Leia-me)</summary>
+                <summary style="padding:10px; cursor:pointer; color:#fbbf24; font-weight:600;">⚠️ ${L_DISCLAIMER_TITLE}</summary>
                 <div style="padding:15px; color:#cbd5e1; line-height:1.6;">
-                    <p>Este relatório reflete apenas o que sobreviveu à viagem de volta para este script, e não necessariamente a <strong>Verdade Absoluta do Universo™</strong>.</p>
-                    <p>Lembre-se que entre o seu terminal e o servidor DNS existe uma selva hostil habitada por:</p>
-                    <ul style="margin-left:20px; margin-top:5px; margin-bottom:10px;">
-                        <li><strong>Firewalls Paranoicos:</strong> Que bloqueiam até pensamento positivo (e pacotes UDP legítimos).</li>
-                        <li><strong>Middleboxes Criativos:</strong> Filtros de segurança que acham que sua query DNS é um ataque nuclear.</li>
-                        <li><strong>Rate Limits:</strong> Porque ninguém gosta de spam, nem mesmo o servidor.</li>
-                        <li><strong>Balanceamento de Carga:</strong> Onde servidores diferentes respondem com humores diferentes.</li>
-                    </ul>
-                    <p><strong>Conclusão:</strong> Se estiver tudo vermelho, respire antes de xingar o admin do DNS (verifique sua rede). Se estiver tudo verde, desconfie.</p>
+                    ${L_DISCLAIMER_TEXT}
                 </div>
             </details>
             
             <div style="margin-top:30px; text-align:center; color:#64748b; font-size:0.8rem; border-top:1px solid #334155; padding-top:20px;">
-                Gerado automaticamente por <strong>FriendlyDNSReporter</strong><br>
-                Repositório Oficial: <a href="https://github.com/flashbsb/FriendlyDNSReporter" target="_blank" style="color:#3b82f6; text-decoration:none;">github.com/flashbsb/FriendlyDNSReporter</a>
+                ${L_GENERATED_BY} <strong>FriendlyDNSReporter</strong><br>
+                ${L_OFFICIAL_REPO} <a href="https://github.com/flashbsb/FriendlyDNSReporter" target="_blank" style="color:#3b82f6; text-decoration:none;">github.com/flashbsb/FriendlyDNSReporter</a>
             </div>
         </div>
 
-        <div id="tab-servers" class="tab-content"><div class="page-header"><div><h1>Servidores</h1><div class="subtitle">Inventário e Performance.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">Expandir Todos</button> <button class="btn-tech" onclick="toggleAllDetails(false)">Colapsar Todos</button></div></div>$server_rows</div>
-        <div id="tab-zones" class="tab-content"><div class="page-header"><div><h1>Zonas</h1><div class="subtitle">Autoridade e SOA.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">Expandir Todos</button> <button class="btn-tech" onclick="toggleAllDetails(false)">Colapsar Todos</button></div></div>$zone_rows</div>
-        <div id="tab-records" class="tab-content"><div class="page-header"><div><h1>Registros</h1><div class="subtitle">Resolução e Consistência.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">Expandir Todos</button> <button class="btn-tech" onclick="toggleAllDetails(false)">Colapsar Todos</button></div></div>$record_rows</div>
+        <div id="tab-servers" class="tab-content"><div class="page-header"><div><h1>${L_TAB_SRV}</h1><div class="subtitle">Inventário e Performance.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$server_rows</div>
+        <div id="tab-zones" class="tab-content"><div class="page-header"><div><h1>${L_TAB_ZONE}</h1><div class="subtitle">Autoridade e SOA.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$zone_rows</div>
+        <div id="tab-records" class="tab-content"><div class="page-header"><div><h1>${L_TAB_REC}</h1><div class="subtitle">Resolução e Consistência.</div></div><div><button class="btn-tech" onclick="toggleAllDetails(true)">${L_MSG_EXPAND_ALL}</button> <button class="btn-tech" onclick="toggleAllDetails(false)">${L_MSG_COLLAPSE_ALL}</button></div></div>$record_rows</div>
         
 <div id="tab-config" class="tab-content">
-             <div class="page-header"><h1>Bastidores da Execução</h1><div class="subtitle">Detalhes técnicos, ambiente e configurações utilizadas.</div></div>
+             <div class="page-header"><h1>${L_TAB_BACK}</h1><div class="subtitle">Detalhes técnicos, ambiente e configurações utilizadas.</div></div>
              
              <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
                  
                  <!-- 1. EXECUTION ENVIRONMENT -->
                  <div class="card">
-                    <div class="card-header">💻 Ambiente de Execução</div>
+                    <div class="card-header">💻 ${L_BK_ENV}</div>
                     <table>
-                        <tr><td style="width:40%">Usuário</td><td><span class="badge bg-neutral">$USER</span></td></tr>
-                        <tr><td>Hostname</td><td><span class="badge bg-neutral">$HOSTNAME</span></td></tr>
-                        <tr><td>Kernel</td><td style="font-family:monospace; font-size:0.85em">$SYS_KERNEL</td></tr>
-                        <tr><td>OS</td><td>$SYS_OS</td></tr>
-                        <tr><td>Shell</td><td>$SHELL</td></tr>
-                        <tr><td>Term</td><td>$TERM</td></tr>
+                        <tr><td style="width:40%">${L_BK_USER}</td><td><span class="badge bg-neutral">$USER</span></td></tr>
+                        <tr><td>${L_BK_HOST}</td><td><span class="badge bg-neutral">$HOSTNAME</span></td></tr>
+                        <tr><td>${L_BK_KERNEL}</td><td style="font-family:monospace; font-size:0.85em">$SYS_KERNEL</td></tr>
+                        <tr><td>${L_BK_OS}</td><td>$SYS_OS</td></tr>
+                        <tr><td>${L_BK_SHELL}</td><td>$SHELL</td></tr>
+                        <tr><td>${L_BK_TERM}</td><td>$TERM</td></tr>
                         <!-- Merged duplicated info -->
-                        <tr><td>Script Dir</td><td style="font-family:monospace; font-size:0.8em">${SCRIPT_DIR}</td></tr>
-                        <tr><td>Log Output</td><td style="font-family:monospace; font-size:0.8em">${LOG_OUTPUT_DIR}</td></tr>
+                        <tr><td>${L_BK_DIR}</td><td style="font-family:monospace; font-size:0.8em">${SCRIPT_DIR}</td></tr>
+                        <tr><td>${L_BK_OUT}</td><td style="font-family:monospace; font-size:0.8em">${LOG_OUTPUT_DIR}</td></tr>
                     </table>
                  </div>
 
                  <!-- 2. TOOL VERSIONS -->
                  <div class="card">
-                     <div class="card-header">🛠️ Ferramentas & Versões</div>
+                     <div class="card-header">🛠️ ${L_BK_TOOLS}</div>
                      <table>
-                        <tr><td>Script Version</td><td><strong style="color:var(--accent)">v${SCRIPT_VERSION}</strong></td></tr>
+                        <tr><td>${L_BK_VER}</td><td><strong style="color:var(--accent)">v${SCRIPT_VERSION}</strong></td></tr>
                         <tr><td>Dig (DNS Utils)</td><td>$TOOL_DIG_VER</td></tr>
                         <tr><td>OpenSSL</td><td>$TOOL_OPENSSL_VER</td></tr>
                         <tr><td>Traceroute</td><td>$TOOL_TRACE_VER</td></tr>
@@ -3688,10 +3978,10 @@ EOF
                  
                  <!-- 3. INPUT FILES -->
                  <div class="card">
-                     <div class="card-header">📂 Arquivos de Entrada</div>
+                     <div class="card-header">📂 ${L_BK_INPUT}</div>
                      <table>
                         <tr>
-                            <td rowspan="2" style="width:30%; vertical-align:top; border-bottom:0;">Domínios</td>
+                            <td rowspan="2" style="width:30%; vertical-align:top; border-bottom:0;">${L_BK_DOMAINS}</td>
                             <td>
                                 <div style="font-family:monospace; font-size:0.85em; margin-bottom:4px;">$FILE_DOMAINS</div>
                                 <span class="badge bg-neutral">${INPUT_DOMAINS_COUNT} linhas</span> <span style="font-size:0.8em; color:#64748b">(${FILE_DOMAINS_SIZE})</span>
@@ -3700,13 +3990,13 @@ EOF
                         <tr>
                             <td style="border-top:0; padding-top:0;">
                                 <details style="background:rgba(0,0,0,0.2); border-radius:4px; padding:5px;">
-                                    <summary style="font-size:0.75rem; cursor:pointer; color:var(--accent);">Ver Conteúdo (Amostra)</summary>
+                                    <summary style="font-size:0.75rem; cursor:pointer; color:var(--accent);">${L_BK_CONTENT}</summary>
                                     <pre style="font-size:0.7rem; color:#cbd5e1; max-height:100px; overflow-y:auto; margin-top:5px;">$CONTENT_DOMAINS</pre>
                                 </details>
                             </td>
                         </tr>
                         <tr>
-                            <td rowspan="2" style="width:30%; vertical-align:top; border-bottom:0;">Grupos DNS</td>
+                            <td rowspan="2" style="width:30%; vertical-align:top; border-bottom:0;">${L_BK_GROUPS}</td>
                             <td>
                                 <div style="font-family:monospace; font-size:0.85em; margin-bottom:4px;">$FILE_GROUPS</div>
                                 <span class="badge bg-neutral">${INPUT_GROUPS_COUNT} linhas</span> <span style="font-size:0.8em; color:#64748b">(${FILE_GROUPS_SIZE})</span>
@@ -3715,7 +4005,7 @@ EOF
                          <tr>
                             <td style="border-top:0; padding-top:0;">
                                 <details style="background:rgba(0,0,0,0.2); border-radius:4px; padding:5px;">
-                                    <summary style="font-size:0.75rem; cursor:pointer; color:var(--accent);">Ver Conteúdo (Amostra)</summary>
+                                    <summary style="font-size:0.75rem; cursor:pointer; color:var(--accent);">${L_BK_CONTENT}</summary>
                                     <pre style="font-size:0.7rem; color:#cbd5e1; max-height:100px; overflow-y:auto; margin-top:5px;">$CONTENT_GROUPS</pre>
                                 </details>
                             </td>
@@ -3725,20 +4015,20 @@ EOF
 
                  <!-- 4. PERFORMANCE & TIMING -->
                  <div class="card">
-                    <div class="card-header">⏱️ Performance da Coleta</div>
+                    <div class="card-header">⏱️ ${L_BK_PERF}</div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
                         <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:6px; text-align:center;">
-                            <div style="font-size:0.8em; color:#94a3b8; text-transform:uppercase;">Duração Total</div>
+                            <div style="font-size:0.8em; color:#94a3b8; text-transform:uppercase;">${L_BK_DUR}</div>
                             <div style="font-size:1.4em; font-weight:700; color:#fff;">${TOTAL_DURATION}s</div>
                         </div>
                         <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:6px; text-align:center;">
-                            <div style="font-size:0.8em; color:#94a3b8; text-transform:uppercase;">Sleep Time</div>
+                            <div style="font-size:0.8em; color:#94a3b8; text-transform:uppercase;">${L_BK_SLEEP}</div>
                             <div style="font-size:1.4em; font-weight:700; color:#fbbf24;">${TOTAL_SLEEP_TIME}s</div>
                         </div>
                     </div>
                     <table>
-                        <tr><td>Início</td><td style="font-size:0.9em">$START_TIME_HUMAN</td></tr>
-                        <tr><td>Fim</td><td style="font-size:0.9em">$END_TIME_HUMAN</td></tr>
+                        <tr><td>${L_BK_START}</td><td style="font-size:0.9em">$START_TIME_HUMAN</td></tr>
+                        <tr><td>${L_BK_END}</td><td style="font-size:0.9em">$END_TIME_HUMAN</td></tr>
                     </table>
                  </div>
              </div>
@@ -3746,7 +4036,7 @@ EOF
              <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top:20px;">
                  <!-- 5. CONFIGURATION FLAGS (Standardized Layout) -->
                  <div class="card">
-                     <div class="card-header">⚙️ Flags de Configuração</div>
+                     <div class="card-header">⚙️ ${L_BK_CONF}</div>
                      <table class="simple-table">
                         <style>.conf-row td { padding: 4px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); } .conf-true { color: #10b981; font-weight:bold; } .conf-false { color: #f59e0b; opacity:0.8; }</style>
                         <tr class="conf-row"><td>Ping Check</td><td class="conf-${ENABLE_PING:-false}">${ENABLE_PING:-false}</td></tr>
@@ -3764,7 +4054,7 @@ EOF
 
                  <!-- 6. THRESHOLDS (Complete) -->
                  <div class="card">
-                    <div class="card-header">📏 Limites e Tolerâncias</div>
+                    <div class="card-header">📏 ${L_BK_THR}</div>
                     <table>
                         <tr><td>Timeout Global</td><td>${TIMEOUT}s</td></tr>
                         <tr><td>Sleep Interval</td><td>${SLEEP}s</td></tr>
@@ -3791,7 +4081,7 @@ EOF
         </div>
         
         <div id="tab-help" class="tab-content">
-             <div class="page-header"><h1>Ajuda & Sobre</h1></div>
+             <div class="page-header"><h1>${L_TAB_HELP}</h1></div>
              
              <div class="card" style="margin-bottom:20px; border-left:4px solid #3b82f6;">
                 <h3>📌 Disclaimer</h3>
@@ -5083,7 +5373,7 @@ print_final_terminal_summary() {
      generate_hierarchical_stats
      
      echo -e "\n${BOLD}======================================================${NC}"
-     echo -e "${BOLD}              RESUMO DA EXECUÇÃO${NC}"
+     echo -e "${BOLD}              EXECUTION SUMMARY${NC}"
      echo -e "${BOLD}======================================================${NC}"
      
      # Calculate totals for summary
@@ -5105,24 +5395,24 @@ print_final_terminal_summary() {
      fi
      [[ -z "$rec_count" ]] && rec_count=0
 
-     echo -e "${BLUE}${BOLD}GERAL:${NC}"
-     echo -e "  ⏱️  Duração Total   : ${duration}s"
-     echo -e "  🧪 Total Execuções  : ${total_tests} (${CNT_TESTS_SRV} Server Tests, ${CNT_TESTS_ZONE} Zone Tests, ${CNT_TESTS_REC} Record Tests)"
-     echo -e "  🔢 Escopo Testado   : ${srv_count} Servidores | ${zone_count} Zonas | ${rec_count} Registros"
+     echo -e "${BLUE}${BOLD}GENERAL:${NC}"
+     echo -e "  ⏱️  Total Duration   : ${duration}s"
+     echo -e "  🧪 Total Executions : ${total_tests} (${CNT_TESTS_SRV} Server Tests, ${CNT_TESTS_ZONE} Zone Tests, ${CNT_TESTS_REC} Record Tests)"
+     echo -e "  🔢 Scoped Tested    : ${srv_count} Servers | ${zone_count} Zones | ${rec_count} Records"
      
-     echo -e "\n${BLUE}${BOLD}SERVIDORES:${NC}"
-     echo -e "  📡 Conectividade   : ${GREEN}${CNT_PING_OK:-0} OK${NC} / ${RED}${CNT_PING_FAIL:-0} Falhas${NC}"
-     echo -e "  🌉 Portas          : 53[${GREEN}${TCP_SUCCESS:-0}${NC}/${RED}${TCP_FAIL:-0}${NC}] | 853[${GREEN}${DOT_SUCCESS:-0}${NC}/${RED}${DOT_FAIL:-0}${NC}]"
-     echo -e "  ⚙️  Configuração    : Ver[${GREEN}${SEC_HIDDEN:-0}${NC}/${RED}${SEC_REVEALED:-0}${NC}] | Rec[${GREEN}${SEC_REC_OK:-0}${NC}/${RED}${SEC_REC_RISK:-0}${NC}]"
-     echo -e "  🔧 Recursos        : EDNS[${GREEN}${EDNS_SUCCESS:-0}${NC}] | Cookie[${GREEN}${COOKIE_SUCCESS:-0}${NC}]"
-     echo -e "  🛡️  Segurança       : DNSSEC[${GREEN}${DNSSEC_SUCCESS:-0}${NC}/${RED}${DNSSEC_FAIL:-0}${NC}] | DoH[${GREEN}${DOH_SUCCESS:-0}${NC}/${RED}${DOH_FAIL:-0}${NC}] | TLS[${GREEN}${TLS_SUCCESS:-0}${NC}/${RED}${TLS_FAIL:-0}${NC}]"
+     echo -e "\n${BLUE}${BOLD}SERVERS:${NC}"
+     echo -e "  📡 Connectivity    : ${GREEN}${CNT_PING_OK:-0} OK${NC} / ${RED}${CNT_PING_FAIL:-0} Failed${NC}"
+     echo -e "  🌉 Ports           : 53[${GREEN}${TCP_SUCCESS:-0}${NC}/${RED}${TCP_FAIL:-0}${NC}] | 853[${GREEN}${DOT_SUCCESS:-0}${NC}/${RED}${DOT_FAIL:-0}${NC}]"
+     echo -e "  ⚙️  Configuration   : Ver[${GREEN}${SEC_HIDDEN:-0}${NC}/${RED}${SEC_REVEALED:-0}${NC}] | Rec[${GREEN}${SEC_REC_OK:-0}${NC}/${RED}${SEC_REC_RISK:-0}${NC}]"
+     echo -e "  🔧 Resources       : EDNS[${GREEN}${EDNS_SUCCESS:-0}${NC}] | Cookie[${GREEN}${COOKIE_SUCCESS:-0}${NC}]"
+     echo -e "  🛡️  Security        : DNSSEC[${GREEN}${DNSSEC_SUCCESS:-0}${NC}/${RED}${DNSSEC_FAIL:-0}${NC}] | DoH[${GREEN}${DOH_SUCCESS:-0}${NC}/${RED}${DOH_FAIL:-0}${NC}] | TLS[${GREEN}${TLS_SUCCESS:-0}${NC}/${RED}${TLS_FAIL:-0}${NC}]"
      
-     echo -e "\n${BLUE}${BOLD}ZONAS:${NC}"
+     echo -e "\n${BLUE}${BOLD}ZONES:${NC}"
      # Calcs for Zone Summary if not fully populated in previous steps (using available globals)
      # SEC_AXFR_RISK = Allowed, SEC_AXFR_OK = Denied
-     echo -e "  🔄 SOA Sync        : ${GREEN}${CNT_ZONES_OK:-0} Consistentes${NC} / ${RED}${CNT_ZONES_DIV:-0} Divergentes${NC}"
-     echo -e "  🌍 AXFR            : ${GREEN}${SEC_AXFR_OK:-0} Bloqueados${NC} / ${RED}${SEC_AXFR_RISK:-0} Expostos${NC}"
-     echo -e "  🔐 Assinaturas     : ${GREEN}${ZONE_SEC_SIGNED:-0} Assinadas${NC} / ${RED}${ZONE_SEC_UNSIGNED:-0} Falhas (Missing)${NC}"
+     echo -e "  🔄 SOA Sync        : ${GREEN}${CNT_ZONES_OK:-0} Consistent${NC} / ${RED}${CNT_ZONES_DIV:-0} Divergent${NC}"
+     echo -e "  🌍 AXFR            : ${GREEN}${SEC_AXFR_OK:-0} Blocked${NC} / ${RED}${SEC_AXFR_RISK:-0} Exposed${NC}"
+     echo -e "  🔐 Signatures      : ${GREEN}${ZONE_SEC_SIGNED:-0} Signed${NC} / ${RED}${ZONE_SEC_UNSIGNED:-0} Failed (Missing)${NC}"
 
      # Calc Avg Latency for Zones
      local zone_lat_sum=0
@@ -5134,14 +5424,14 @@ print_final_terminal_summary() {
      if [[ $zone_lat_cnt -gt 0 ]]; then
           local z_avg=$(awk -v s="$zone_lat_sum" -v c="$zone_lat_cnt" 'BEGIN {printf "%.0f", s/c}')
           local z_col=$(get_dns_timing_color "$z_avg")
-          echo -e "  ⏱️  Tempo Médio de Resposta (DNS): ${z_col}${z_avg}ms${NC}"
+          echo -e "  ⏱️  Avg Resp Time (DNS): ${z_col}${z_avg}ms${NC}"
      fi
      
-     echo -e "\n${BLUE}${BOLD}REGISTROS:${NC}"
+     echo -e "\n${BLUE}${BOLD}RECORDS:${NC}"
      local rec_ok=$((CNT_NOERROR))
-     echo -e "  ✅ Sucessos        : ${GREEN}${CNT_REC_FULL_OK:-0} OK${NC} / ${YELLOW}${CNT_REC_PARTIAL:-0} Parcial${NC}"
-     echo -e "  🚫 Resultados      : ${RED}${CNT_REC_FAIL:-0} Falhas${NC} / ${YELLOW}${CNT_REC_NXDOMAIN:-0} NXDOMAIN${NC}"
-     echo -e "  ⚠️  Consistência    : ${GREEN}${CNT_REC_CONSISTENT:-0} Sincronizados${NC} / ${RED}${CNT_REC_DIVERGENT:-0} Divergentes${NC}"
+     echo -e "  ✅ Success         : ${GREEN}${CNT_REC_FULL_OK:-0} OK${NC} / ${YELLOW}${CNT_REC_PARTIAL:-0} Partial${NC}"
+     echo -e "  🚫 Results         : ${RED}${CNT_REC_FAIL:-0} Failed${NC} / ${YELLOW}${CNT_REC_NXDOMAIN:-0} NXDOMAIN${NC}"
+     echo -e "  ⚠️  Consistency     : ${GREEN}${CNT_REC_CONSISTENT:-0} Sync${NC} / ${RED}${CNT_REC_DIVERGENT:-0} Divergent${NC}"
      
      # Calc Avg Latency for Records
      local rec_lat_sum=0
@@ -5156,7 +5446,7 @@ print_final_terminal_summary() {
      if [[ $rec_lat_cnt -gt 0 ]]; then
           local r_avg=$(awk -v s="$rec_lat_sum" -v c="$rec_lat_cnt" 'BEGIN {printf "%.0f", s/c}')
           local r_col=$(get_dns_timing_color "$r_avg")
-          echo -e "  ⏱️  Tempo Médio de Resposta (DNS): ${r_col}${r_avg}ms${NC}"
+          echo -e "  ⏱️  Avg Resp Time (DNS): ${r_col}${r_avg}ms${NC}"
      fi
      
      # --- EXECUTIVE SCORECARD (Terminal Version) ---
@@ -5166,22 +5456,22 @@ print_final_terminal_summary() {
      
      # Network
      local c_net=$GREEN; [[ $G_SCORE_NETWORK -lt 90 ]] && c_net=$YELLOW; [[ $G_SCORE_NETWORK -lt 70 ]] && c_net=$RED
-     echo -e "  📡 Saúde da Rede     : ${c_net}${G_SCORE_NETWORK}%${NC}"
+     echo -e "  📡 Network Health    : ${c_net}${G_SCORE_NETWORK}%${NC}"
      [[ -n "$G_DETAILS_NETWORK" ]] && echo -e "${GRAY}${G_DETAILS_NETWORK}${NC}"
      
      # Stability
      local c_stab=$GREEN; [[ $G_SCORE_STABILITY -lt 90 ]] && c_stab=$YELLOW; [[ $G_SCORE_STABILITY -lt 70 ]] && c_stab=$RED
-     echo -e "  ⚖️  Estabilidade      : ${c_stab}${G_SCORE_STABILITY}%${NC}"
+     echo -e "  ⚖️  Stability         : ${c_stab}${G_SCORE_STABILITY}%${NC}"
      [[ -n "$G_DETAILS_STABILITY" ]] && echo -e "${GRAY}${G_DETAILS_STABILITY}${NC}"
      
      # Security
      local c_sec=$GREEN; [[ $G_SCORE_SECURITY -lt 90 ]] && c_sec=$YELLOW; [[ $G_SCORE_SECURITY -lt 70 ]] && c_sec=$RED
-     echo -e "  🛡️  Segurança         : ${c_sec}${G_SCORE_SECURITY}%${NC}"
+     echo -e "  🛡️  Security          : ${c_sec}${G_SCORE_SECURITY}%${NC}"
      [[ -n "$G_DETAILS_SECURITY" ]] && echo -e "${GRAY}${G_DETAILS_SECURITY}${NC}"
      
      # Modernity
      local c_mod=$GREEN; [[ $G_SCORE_MODERNITY -lt 90 ]] && c_mod=$YELLOW; [[ $G_SCORE_MODERNITY -lt 70 ]] && c_mod=$RED
-     echo -e "  ✨ Modernidade       : ${c_mod}${G_SCORE_MODERNITY}%${NC}"
+     echo -e "  ✨ Modernity         : ${c_mod}${G_SCORE_MODERNITY}%${NC}"
      [[ -n "$G_DETAILS_MODERNITY" ]] && echo -e "${GRAY}${G_DETAILS_MODERNITY}${NC}"
 
      # Log to text file
@@ -5195,7 +5485,7 @@ print_final_terminal_summary() {
      generate_hierarchical_stats >> "$TEMP_FULL_LOG"
 
      echo -e "\n${BOLD}======================================================${NC}"
-     echo -e "${CYAN}      📥 BAIXE E CONTRIBUA NO GITHUB${NC}"
+     echo -e "${CYAN}      📥 DOWNLOAD & CONTRIBUTE ON GITHUB${NC}"
      echo -e "${CYAN}      🔗 https://github.com/flashbsb/FriendlyDNSReporter${NC}"
      echo -e "${BOLD}======================================================${NC}"
 }
@@ -5210,7 +5500,7 @@ validate_dependencies_and_capabilities() {
     # Check for OpenSSL (Required for TLS/DoT checks via s_client)
     if [[ "$ENABLE_TLS_CHECK" == "true" ]]; then
         if ! command -v openssl &>/dev/null; then
-             echo -e "${YELLOW}⚠️  Aviso: 'openssl' não encontrado. O teste TLS (Handshake) será desativado.${NC}"
+             echo -e "${YELLOW}⚠️  Warning: 'openssl' not found. TLS (Handshake) test will be disabled.${NC}"
              ENABLE_TLS_CHECK="false"
         fi
     fi
@@ -5231,14 +5521,14 @@ validate_dependencies_and_capabilities() {
     # Check for DoH support (+https)
     if [[ "$ENABLE_DOH_CHECK" == "true" ]]; then
         if ! dig +https +noall . &>/dev/null; then
-             # Falta suporte no DIG, tentar CURL
+             # Missing support in DIG, try CURL
              if command -v curl &> /dev/null; then
-                  # CURL disponivel, usar como fallback
+                  # CURL available, use as fallback
                   DOH_USE_CURL="true"
-                  # Opcional: Avisar que está usando fallback ou silenciar se funcionar bem
-                  # STARTUP_WARNINGS+=("${GRAY}ℹ️  Info: 'dig' sem suporte DoH. Usando 'curl' como fallback.${NC}")
+                  # Optional: Warn using fallback or silence if works well
+                  # STARTUP_WARNINGS+=("${GRAY}ℹ️  Info: 'dig' no DoH support. Using 'curl' fallback.${NC}")
              else
-                  STARTUP_WARNINGS+=("${YELLOW}⚠️  Aviso: O binário 'dig' local não suporta a opção '+https' e 'curl' não foi encontrado. O teste DoH será desativado.${NC}")
+                  STARTUP_WARNINGS+=("${YELLOW}⚠️  Warning: Local 'dig' does not support '+https' and 'curl' not found. DoH test disabled.${NC}")
                   ENABLE_DOH_CHECK="false"
              fi
         fi
@@ -5247,7 +5537,7 @@ validate_dependencies_and_capabilities() {
     # Check for Cookie support (+cookie)
     if [[ "$ENABLE_COOKIE_CHECK" == "true" ]]; then
          if ! dig -h 2>&1 | grep -q "+\[no\]cookie"; then
-             echo -e "${YELLOW}⚠️  Aviso: O binário 'dig' local não suporta a opção '+cookie'. O teste de Cookies será desativado.${NC}"
+             echo -e "${YELLOW}⚠️  Warning: Local 'dig' does not support '+cookie'. Cookie test disabled.${NC}"
              ENABLE_COOKIE_CHECK="false"
          fi
     fi
@@ -5255,7 +5545,7 @@ validate_dependencies_and_capabilities() {
     # Check for DNSSEC support (+dnssec)
     if [[ "$ENABLE_DNSSEC_CHECK" == "true" ]]; then
         if ! dig +dnssec +noall . &>/dev/null; then
-             echo -e "${YELLOW}⚠️  Aviso: O binário 'dig' local não suporta a opção '+dnssec'. A validação DNSSEC será desativada.${NC}"
+             echo -e "${YELLOW}⚠️  Warning: Local 'dig' does not support '+dnssec'. DNSSEC validation disabled.${NC}"
              ENABLE_DNSSEC_CHECK="false"
         fi
     fi
@@ -5273,7 +5563,7 @@ get_probe_domain() {
 
 # --- 1. SERVER TESTS ---
 run_server_tests() {
-    echo -e "\n${BLUE}=== FASE 1: TESTES DE SERVIDOR (Infraestrutura & Capabilities) ===${NC}"
+    echo -e "\n${BLUE}=== PHASE 1: SERVER TESTS (Infrastructure & Capabilities) ===${NC}"
     log_section "PHASE 1: SERVER TESTS"
 
     # Declare cache arrays globally
@@ -5838,12 +6128,12 @@ EOF
 
 # --- 2. ZONE TESTS ---
 run_zone_tests() {
-    echo -e "\n${BLUE}=== FASE 2: TESTES DE ZONA (SOA, AXFR) ===${NC}"
+    echo -e "\n${BLUE}=== PHASE 2: ZONE TESTS (SOA, AXFR) ===${NC}"
     log_section "PHASE 2: ZONE TESTS"
     
     local zone_count=0
     [[ -f "$FILE_DOMAINS" ]] && zone_count=$(grep -vE '^\s*#|^\s*$' "$FILE_DOMAINS" | wc -l)
-    echo "  Identificadas ${zone_count} zonas únicas para teste."
+    echo "  Identified ${zone_count} unique zones for testing."
     echo "  Legend: [SOA] [Query Time] [AXFR] [DNSSEC]"
     
     # Global Stats Arrays
@@ -6064,7 +6354,7 @@ EOF
                       fi
                  fi
                  
-                 echo -e "     🏢 Grupo: $grp -> $srv : SOA[$term_soa] $term_qt AXFR[$term_axfr] $term_sig"
+                 echo -e "     🏢 Group: $grp -> $srv : SOA[$term_soa] $term_qt AXFR[$term_axfr] $term_sig"
              done
          done
     done < "$FILE_DOMAINS"
@@ -6074,7 +6364,7 @@ EOF
 
 # --- 3. RECORD TESTS ---
 run_record_tests() {
-    echo -e "\n${BLUE}=== FASE 3: TESTES DE REGISTROS (Resolução e Consistência) ===${NC}"
+    echo -e "\n${BLUE}=== PHASE 3: RECORD TESTS (Resolution & Consistency) ===${NC}"
     log_section "PHASE 3: RECORD TESTS"
     
     local rec_count=0
@@ -6089,7 +6379,7 @@ run_record_tests() {
         } END { print count }' "$FILE_DOMAINS")
      fi
     [[ -z "$rec_count" ]] && rec_count=0
-    echo "  Identificados ${rec_count} registros únicos para teste."
+    echo "  Identified ${rec_count} unique records for testing."
     echo -e "  Legend: [Status] [Query Time] [Inconsistency=Differs from Group]"
     
     # Global Stats Arrays for Records
@@ -6268,7 +6558,7 @@ EOF
                          results_html+="<span class='badge status-fail' style='margin-left:10px;'>DIVERGENT ($unique_answers)</span>"
                          
                          # --- BREAKDOWN VISUALIZATION ---
-                         echo -e "     ⚠️  ${YELLOW}Divergência Detectada (${unique_answers} respostas distintas):${NC}"
+                         echo -e "     ⚠️  ${YELLOW}Divergence Detected (${unique_answers} distinct answers):${NC}"
                          
                          # Create a map of Answer -> List of Servers
                          declare -A answer_groups
@@ -6287,7 +6577,7 @@ EOF
                              local display_ans="${ans:0:80}"
                              [[ ${#ans} -gt 80 ]] && display_ans="${display_ans}..."
                              
-                             echo -e "       ${RED}→${NC} ${CYAN}[$srvs_in_group]${NC} respondeu: ${GRAY}${display_ans}${NC}"
+                             echo -e "       ${RED}→${NC} ${CYAN}[$srvs_in_group]${NC} answered: ${GRAY}${display_ans}${NC}"
                          done
                          unset answer_groups
                          
@@ -6366,6 +6656,7 @@ main() {
     # ==========================
     # NEW EXECUTION FLOW
     # ==========================
+    load_html_strings
     init_html_parts
     init_log_file
     validate_csv_files
@@ -6410,15 +6701,15 @@ main() {
         assemble_json
     fi
     
-    echo -e "\n${GREEN}=== CONCLUÍDO ===${NC}"
-    echo "  📄 Relatório HTML   : $HTML_FILE"
-    [[ "$ENABLE_JSON_REPORT" == "true" ]] && echo "  📄 Relatório JSON   : $LOG_FILE_JSON"
+    echo -e "\n${GREEN}=== COMPLETED ===${NC}"
+    echo "  📄 HTML Report      : $HTML_FILE"
+    [[ "$ENABLE_JSON_REPORT" == "true" ]] && echo "  📄 JSON Report      : $LOG_FILE_JSON"
     if [[ "$ENABLE_CSV_REPORT" == "true" ]]; then
-        echo "  📄 Relatório CSV (Srv) : $LOG_FILE_CSV_SRV"
-        echo "  📄 Relatório CSV (Zone): $LOG_FILE_CSV_ZONE"
-        echo "  📄 Relatório CSV (Rec) : $LOG_FILE_CSV_REC"
+        echo "  📄 CSV Report (Srv) : $LOG_FILE_CSV_SRV"
+        echo "  📄 CSV Report (Zone): $LOG_FILE_CSV_ZONE"
+        echo "  📄 CSV Report (Rec) : $LOG_FILE_CSV_REC"
     fi
-    [[ "$ENABLE_LOG_TEXT" == "true" ]] && echo "  📝 Log Texto        : $LOG_FILE_TEXT"
+    [[ "$ENABLE_LOG_TEXT" == "true" ]] && echo "  📝 Text Log         : $LOG_FILE_TEXT"
 
 }
 
