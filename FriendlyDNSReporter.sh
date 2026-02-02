@@ -2,11 +2,11 @@
 
 # ==============================================
 # SCRIPT FriendlyDNSReporter - INITIAL EDITION
-# Version: 1.0.15
+# Version: 1.0.17
 # "Initial Edition"
 
 # --- GENERAL SETTINGS ---
-SCRIPT_VERSION="1.0.15"
+SCRIPT_VERSION="1.0.17"
 PRODUCT_SLOGAN="FriendlyDNSReporter. Because it is always DNS. Or not. FriendlyDNSReporter runs automated DNS tests, replaces endless manual dig commands, and produces colorful HTML reports so you can prove it was DNS. Or discover new, exciting doubts"
 
 # Load external configuration
@@ -6441,7 +6441,28 @@ EOF
     echo "</tbody></table></div></div>" >> "$TEMP_SECTION_ZONE"
 }
 
-generate_record_row() {
+generate_domain_header() {
+    local domain="$1"
+    local record_count="$2"
+    
+    cat >> "$TEMP_SECTION_RECORD" <<EOF
+<details open style='margin-bottom:15px; border:1px solid #334155; border-radius:8px; overflow:hidden;'>
+    <summary style='background:#1e293b; padding:12px 15px; cursor:pointer; font-weight:600; color:#fff; display:flex; justify-content:space-between;'>
+        <span>📂 $domain <span style='font-size:0.8em; opacity:0.6; font-weight:400;'>($record_count records)</span></span>
+    </summary>
+    <div style='padding:10px;'>
+EOF
+}
+
+generate_domain_footer() {
+    cat >> "$TEMP_SECTION_RECORD" <<EOF
+    </div>
+</details>
+EOF
+}
+
+
+generate_record_details() {
     local target="$1"
     local rec_type="$2"
     local grp="$3"
@@ -6449,20 +6470,17 @@ generate_record_row() {
     local consistency="$5"
     local unique_answers="$6"
     
-    # Determine status badge
-    local status_badge="<span class='badge status-ok'>OK</span>"
-    local divergence_info=""
+    # Determine status and consistency badges
+    local status_badge_class="badge status-ok"
+    local status_text="OK"
+    local consistency_badge_class="badge status-ok"
+    local consistency_text="SYNC"
     
-    if [[ "$consistency" == "DIVERGENT" ]]; then
-        status_badge="<span class='badge status-warn'>DIVERGENT</span>"
-        divergence_info="<br><small style='color: var(--accent-warning);'>⚠️ $unique_answers distinct answers</small>"
-    fi
-    
-    # Calculate statistics
-    local total_servers=0
-    local total_latency=0
+    # Count successes/failures
     local ok_count=0
     local fail_count=0
+    local total_servers=0
+    local total_latency=0
     
     for srv in $srv_list; do
         total_servers=$((total_servers + 1))
@@ -6472,8 +6490,14 @@ generate_record_row() {
         
         if [[ "$status" == "NOERROR" ]]; then
             ok_count=$((ok_count + 1))
+        elif [[ "$status" == "NXDOMAIN" ]]; then
+            fail_count=$((fail_count + 1))
+            status_badge_class="badge status-warn"
+            status_text="NXDOMAIN"
         else
             fail_count=$((fail_count + 1))
+            status_badge_class="badge status-fail"
+            status_text="FAIL"
         fi
         
         if [[ "$lat" =~ ^[0-9]+$ ]]; then
@@ -6481,46 +6505,105 @@ generate_record_row() {
         fi
     done
     
+    # Update status text with counts
+    if [[ $ok_count -eq $total_servers ]]; then
+        status_badge_class="badge status-ok"
+        status_text="OK ($ok_count/$total_servers)"
+    elif [[ $ok_count -gt 0 ]]; then
+        status_badge_class="badge status-warn"
+        status_text="PARTIAL ($ok_count/$total_servers)"
+    fi
+    
+    # Consistency badge
+    if [[ "$consistency" == "DIVERGENT" ]]; then
+        consistency_badge_class="badge status-divergent"
+        consistency_text="DIVERGENT ($unique_answers answers)"
+    fi
+    
     local avg_latency=0
     [[ $total_servers -gt 0 ]] && avg_latency=$((total_latency / total_servers))
     
-    # Build server results column with clickable badges
-    local server_results=""
+    # Get color for average latency
+    local avg_lat_color=$(get_dns_timing_hex "$avg_latency")
+    
+    # Generate nested details structure
+    cat >> "$TEMP_SECTION_RECORD" <<EOF
+<details open style='margin-bottom:10px; border:1px solid #334155; border-radius:8px;'>
+    <summary style='background:#1e293b; padding:10px 15px; cursor:pointer; font-weight:600; color:#fff; display:flex; justify-content:space-between; align-items:center;'>
+        <span>
+            📝 <strong>$target</strong> | 
+            <span class="badge neutral" style="margin:0 5px; padding:3px 8px; font-size:0.75em;">$rec_type</span> | 
+            <span style="color:#94a3b8;">$grp</span> | 
+            <span class="$status_badge_class" style="margin:0 5px;">$status_text</span> | 
+            <span class="$consistency_badge_class" style="margin:0 5px;">$consistency_text</span>
+        </span>
+        <span style='font-size:0.85em; color:$avg_lat_color; font-weight:bold;'>Avg: ${avg_latency}ms</span>
+    </summary>
+    <div style='padding:15px; background:#0f172a;'>
+        <table style='width:100%; border-collapse:collapse;'>
+            <thead style='background:#1e293b;'>
+                <tr>
+                    <th style='padding:8px; text-align:left; color:#94a3b8; font-size:0.75em; text-transform:uppercase;'>Server</th>
+                    <th style='padding:8px; text-align:left; color:#94a3b8; font-size:0.75em; text-transform:uppercase;'>Status</th>
+                    <th style='padding:8px; text-align:left; color:#94a3b8; font-size:0.75em; text-transform:uppercase;'>Latency</th>
+                    <th style='padding:8px; text-align:left; color:#94a3b8; font-size:0.75em; text-transform:uppercase;'>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+EOF
+    
+    # Generate server rows
     for srv in $srv_list; do
         local key="$target|$rec_type|$grp|$srv"
         local lid="${LIDS_RECORD_RES[$key]}"
         local lat="${STATS_RECORD_LATENCY[$key]:-0}"
         local status="${STATS_RECORD_RES[$key]}"
+        local answer="${STATS_RECORD_ANSWER[$key]}"
         
-        # Determine badge color based on status
-        local badge_class="badge neutral"
-        if [[ "$status" == "NOERROR" ]]; then
-            badge_class="badge status-ok"
-        elif [[ "$status" == "NXDOMAIN" ]]; then
+        # Get color for this server's latency
+        local lat_color=$(get_dns_timing_hex "$lat")
+        
+        # Truncate answer for display
+        local display_answer="${answer:0:80}"
+        [[ ${#answer} -gt 80 ]] && display_answer="${display_answer}..."
+        [[ -z "$display_answer" ]] && display_answer="(No Answer)"
+        
+        # Status badge class
+        local badge_class="badge status-ok"
+        local badge_text="$status"
+        if [[ "$status" == "NXDOMAIN" ]]; then
             badge_class="badge status-warn"
-        elif [[ "$status" =~ ^(SERVFAIL|REFUSED|TIMEOUT|ERR).*$ ]]; then
+        elif [[ "$status" =~ ^(SERVFAIL|REFUSED|TIMEOUT|ERR) ]]; then
             badge_class="badge status-fail"
         fi
         
+        # Clickable badge if LID exists
+        local status_html
         if [[ -n "$lid" ]]; then
-            server_results+="<span class=\"$badge_class log-trigger\" data-lid=\"$lid\" data-title=\"Query: $target $rec_type @ $srv\" style=\"cursor:pointer; margin: 2px;\">$srv (${lat}ms)</span> "
+            status_html="<span class='$badge_class log-trigger' data-lid='$lid' data-title='Query: $target $rec_type @ $srv' style='cursor:pointer; font-size:0.75em;'>$badge_text</span>"
         else
-            server_results+="<span class=\"$badge_class\" style=\"margin: 2px;\">$srv (${lat}ms)</span> "
+            status_html="<span class='$badge_class' style='font-size:0.75em;'>$badge_text</span>"
         fi
-    done
-    
-    # Generate table row
-    cat >> "$TEMP_SECTION_RECORD" <<EOF
-                <tr>
-                    <td>$target</td>
-                    <td><span class="badge neutral">$rec_type</span></td>
-                    <td>$grp</td>
-                    <td>$status_badge$divergence_info</td>
-                    <td style="max-width: 500px;">$server_results</td>
-                    <td style="text-align: center; font-weight: bold;">${avg_latency}ms</td>
+        
+        cat >> "$TEMP_SECTION_RECORD" <<EOF
+                <tr style='border-bottom:1px solid #334155;'>
+                    <td style='padding:8px; color:#e2e8f0; font-family:monospace;'>$srv</td>
+                    <td style='padding:8px;'>$status_html</td>
+                    <td style='padding:8px; color:$lat_color; font-weight:bold; cursor:pointer;' class='log-trigger' data-lid='$lid' data-title='Query Time: $target $rec_type @ $srv' title='Click to view details'>${lat}ms</td>
+                    <td style='padding:8px; font-size:0.85em; color:#94a3b8; font-family:monospace;'>$display_answer</td>
                 </tr>
 EOF
+    done
+    
+    cat >> "$TEMP_SECTION_RECORD" <<EOF
+            </tbody>
+        </table>
+    </div>
+</details>
+EOF
 }
+
+
 # --- 3. RECORD TESTS ---
 run_record_tests() {
     echo -e "\n${BLUE}=== PHASE 3: RECORD TESTS (Resolution & Consistency) ===${NC}"
@@ -6554,20 +6637,28 @@ run_record_tests() {
     cat >> "$TEMP_SECTION_RECORD" <<EOF
     <div style="margin-top: 50px;">
         <h2>🔍 Record Validation (Records)</h2>
-        <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Domain/Record</th>
-                    <th>Type</th>
-                    <th>Group</th>
-                    <th>Status</th>
-                    <th>Server Results</th>
-                    <th>Avg Latency</th>
-                </tr>
-            </thead>
-            <tbody>
+        <div style="margin-top: 20px;">
 EOF
+
+    # Pre-count records per domain for header display
+    declare -A DOMAIN_RECORD_COUNT
+    while IFS=';' read -r domain groups test_types record_types extra_hosts; do
+        [[ "$domain" =~ ^# || -z "$domain" ]] && continue
+        IFS=',' read -ra rec_list <<< "$(echo "$record_types" | tr -d '[:space:]')"
+        IFS=',' read -ra grp_list <<< "$groups"
+        IFS=',' read -ra extra_list <<< "$(echo "$extra_hosts" | tr -d '[:space:]')"
+        
+        local target_count=1  # Base domain
+        for h in "${extra_list[@]}"; do
+            [[ -n "$h" ]] && target_count=$((target_count + 1))
+        done
+        
+        local total_records=$((${#rec_list[@]} * ${#grp_list[@]} * target_count))
+        DOMAIN_RECORD_COUNT[$domain]=$total_records
+    done < "$FILE_DOMAINS"
+    
+    # Track current domain for header generation
+    local current_domain=""
 
     while IFS=';' read -r domain groups test_types record_types extra_hosts; do
         [[ "$domain" =~ ^# || -z "$domain" ]] && continue
@@ -6579,6 +6670,16 @@ EOF
         for h in "${extra_list[@]}"; do
             [[ -n "$h" ]] && targets+=("$h.$domain")
         done
+        
+        # Generate domain header when domain changes
+        if [[ "$domain" != "$current_domain" ]]; then
+            # Close previous domain if exists
+            [[ -n "$current_domain" ]] && generate_domain_footer
+            
+            # Open new domain
+            generate_domain_header "$domain" "${DOMAIN_RECORD_COUNT[$domain]}"
+            current_domain="$domain"
+        fi
         
         for target in "${targets[@]}"; do
             # Use target for display and testing
@@ -6750,15 +6851,21 @@ EOF
                          done
                     fi
                     
-                    # Generate analytical card instead of table row
-                    generate_record_row "$target" "$rec_type" "$grp" "$srv_list" "${STATS_RECORD_CONSISTENCY[\"$target|$rec_type|$grp\"]}" "$unique_answers"
+                    # Generate record details (nested structure)
+                    generate_record_details "$target" "$rec_type" "$grp" "$srv_list" \
+                        "${STATS_RECORD_CONSISTENCY[\"$target|$rec_type|$grp\"]}" \
+                        "$unique_answers"
                 done
             done
         done
     done < "$FILE_DOMAINS"
+    
+    # Close last domain if any
+    [[ -n "$current_domain" ]] && generate_domain_footer
+    
     echo ""
     
-    echo "</tbody></table></div></div>" >> "$TEMP_SECTION_RECORD"
+    echo "</div></div>" >> "$TEMP_SECTION_RECORD"
 }
 
 main() {
